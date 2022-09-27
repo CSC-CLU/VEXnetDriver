@@ -26,7 +26,7 @@
 #if defined (_WIN32) || defined(_WIN64)
     //for serial ports above "COM9", we must use this extended syntax of "\\.\COMx".
     //also works for COM0 to COM9.
-    #define SERIAL_PORT "\\\\.\\COM4"
+    #define SERIAL_PORT "\\\\.\\COM6"
 #endif
 #if defined (__linux__) || defined(__APPLE__)
     #define SERIAL_PORT "/dev/ttyACM0"
@@ -45,7 +45,7 @@ bool ReceiveVexProtocolPacket(unsigned char*, unsigned char*, unsigned char*);
 
 // Serial object
 serialib serial;
-DecodeStatusCodes statusCodes(false);
+DecodeStatusCodes statusCodes(SERIAL_PORT, false);
 
 int main(int argc, char *argv[])
 {
@@ -80,7 +80,59 @@ int main(int argc, char *argv[])
     // cin>>mode;
     // // mode = 2;
 
+    unsigned char *PacketType;
+    unsigned char *PayloadSize;
+    unsigned char *DataBytes = new unsigned char[100];
 
+    for (int i = 0; i < 10; i++) {
+        bool packetRecieved = ReceiveVexProtocolPacket(PacketType, PayloadSize, DataBytes);
+        if (packetRecieved) {
+            cout << "Packet Type: " << std::hex << PacketType << endl;
+            cout << "Payload Size: " << std::hex << PayloadSize << endl;
+            cout << "Data Bytes: ";
+            unsigned char PayloadSizeChar = 0;//*PayloadSize
+            for (int j = 0; j < (int)PayloadSizeChar; j++) {
+                cout << std::hex << DataBytes[j] << ' ';
+            }
+            cout << endl;
+        }
+
+
+        PacketType[0] = 0x39;
+        PayloadSize[0] = 0x0A;
+        DataBytes[0] = 0x7F; // Joystick 1
+        DataBytes[1] = 0x7F; // Joystick 2
+        DataBytes[2] = 0x7F; // Joystick 3
+        DataBytes[3] = 0x7F; // Joystick 4
+
+        // Change to |= to specify that the button is pressed
+        DataBytes[4] = 0x00;
+        DataBytes[4] &= 0x01; // Button 56  | L2
+        DataBytes[4] &= 0x02; // Button 56  | L1
+        DataBytes[4] &= 0x04; // Button 56  | R2
+        DataBytes[4] &= 0x08; // Button 56  | R1
+
+        // Change to |= to specify that the button is pressed
+        DataBytes[5] = 0x00;
+        DataBytes[5] &= 0x01; // Button 78  | Down
+        DataBytes[5] &= 0x02; // Button 78  | Left
+        DataBytes[5] &= 0x04; // Button 78  | Up
+        DataBytes[5] &= 0x08; // Button 78  | Right
+        DataBytes[5] &= 0x10; // Button 78  | Cross
+        DataBytes[5] &= 0x20; // Button 78  | Square
+        DataBytes[5] &= 0x40; // Button 78  | Triangle
+        DataBytes[5] &= 0x80; // Button 78  | Circle
+
+        DataBytes[6] = 0x7F; // Accel Y
+        DataBytes[7] = 0x7F; // Accel X
+        DataBytes[8] = 0x7F; // Accel Z
+
+        SendVexProtocolPacket(*PacketType, *PayloadSize, DataBytes);        
+    }
+
+    delete PacketType;
+    delete PayloadSize;
+    delete[] DataBytes;
 
     // Close the serial device
     serial.closeDevice();
