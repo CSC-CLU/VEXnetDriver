@@ -55,20 +55,6 @@ bool DecodeStatusCodes::flushReceiver(char code)
     }
 }
 
-bool DecodeStatusCodes::flushReceiver(char code)
-{
-    // If code != 0
-    if (code) {
-        if (showSuccess) {
-            cout<<"Receiver succesfully flushed"<<endl;
-        }
-        return true;
-    } else {
-        cout<<"Error: reciever not flushed succesfully"<<endl;
-        return false;
-    }
-}
-
 bool DecodeStatusCodes::openDevice(char code)
 {
     switch (code) {
