@@ -18,14 +18,14 @@ public:
     DecodeStatusCodes(const char*, bool mode);
     ~DecodeStatusCodes();
 
-    bool flushReceiver(char code);
-    bool openDevice(char code);
-    bool readBytes(int code);
-    bool readChar(char code);
-    bool readString(int code);
-    bool writeBytes(char code);
-    bool writeChar(char code);
-    bool writeString(char code);
+    bool flushReceiver(const char code);
+    bool openDevice(const char code);
+    bool readBytes(const int code);
+    bool readChar(const char code);
+    bool readString(const int code);
+    bool writeBytes(const char code);
+    bool writeChar(const char code);
+    bool writeString(const char code);
 private:
     const char *serial_port;
     bool showSuccess;
@@ -55,7 +55,21 @@ bool DecodeStatusCodes::flushReceiver(char code)
     }
 }
 
-bool DecodeStatusCodes::openDevice(char code)
+bool DecodeStatusCodes::flushReceiver(const char code)
+{
+    // If code != 0
+    if (code) {
+        if (showSuccess) {
+            cout<<"Receiver succesfully flushed"<<endl;
+        }
+        return true;
+    } else {
+        cout<<"Error: reciever not flushed succesfully"<<endl;
+        return false;
+    }
+}
+
+bool DecodeStatusCodes::openDevice(const char code)
 {
     switch (code) {
         case 1:
@@ -95,9 +109,8 @@ bool DecodeStatusCodes::openDevice(char code)
     };
 }
 
-bool DecodeStatusCodes::readBytes(int code)
+bool DecodeStatusCodes::readBytes(const int code)
 {
-
     if (code > -1) {
         if (showSuccess) {
             cout<<"Bytes read succesfully"<<endl;
@@ -115,7 +128,7 @@ bool DecodeStatusCodes::readBytes(int code)
     }
 }
 
-bool DecodeStatusCodes::readChar(char code)
+bool DecodeStatusCodes::readChar(const char code)
 {
     switch (code) {
         case 1:
@@ -137,7 +150,7 @@ bool DecodeStatusCodes::readChar(char code)
     };
 }
 
-bool DecodeStatusCodes::readString(int code)
+bool DecodeStatusCodes::readString(const int code)
 {
     if (code >   0) {
         if (showSuccess) 
@@ -161,7 +174,7 @@ bool DecodeStatusCodes::readString(int code)
     }
 }
 
-bool DecodeStatusCodes::writeBytes(char code)
+bool DecodeStatusCodes::writeBytes(const char code)
 {
     switch (code) {
         case 1:
@@ -177,7 +190,7 @@ bool DecodeStatusCodes::writeBytes(char code)
     };
 }
 
-bool DecodeStatusCodes::writeChar(char code)
+bool DecodeStatusCodes::writeChar(const char code)
 {
     switch (code) {
         case 1:
@@ -193,7 +206,7 @@ bool DecodeStatusCodes::writeChar(char code)
     };
 }
 
-bool DecodeStatusCodes::writeString(char code)
+bool DecodeStatusCodes::writeString(const char code)
 {
     switch (code) {
         case 1:
