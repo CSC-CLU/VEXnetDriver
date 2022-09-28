@@ -18,14 +18,14 @@ public:
     DecodeStatusCodes(const char*, bool mode);
     ~DecodeStatusCodes();
 
-    bool flushReceiver(const char code);
-    bool openDevice(const char code);
-    bool readBytes(const int code);
-    bool readChar(const char code);
-    bool readString(const int code);
-    bool writeBytes(const char code);
-    bool writeChar(const char code);
-    bool writeString(const char code);
+    bool flushReceiver(char code);
+    bool openDevice(char code);
+    bool readBytes(int code);
+    bool readChar(char code);
+    bool readString(int code);
+    bool writeBytes(char code);
+    bool writeChar(char code);
+    bool writeString(char code);
 private:
     const char *serial_port;
     bool showSuccess;
@@ -55,7 +55,7 @@ bool DecodeStatusCodes::flushReceiver(char code)
     }
 }
 
-bool DecodeStatusCodes::flushReceiver(const char code)
+bool DecodeStatusCodes::flushReceiver(char code)
 {
     // If code != 0
     if (code) {
@@ -69,7 +69,7 @@ bool DecodeStatusCodes::flushReceiver(const char code)
     }
 }
 
-bool DecodeStatusCodes::openDevice(const char code)
+bool DecodeStatusCodes::openDevice(char code)
 {
     switch (code) {
         case 1:
@@ -109,7 +109,7 @@ bool DecodeStatusCodes::openDevice(const char code)
     };
 }
 
-bool DecodeStatusCodes::readBytes(const int code)
+bool DecodeStatusCodes::readBytes(int code)
 {
     if (code > -1) {
         if (showSuccess) {
@@ -128,7 +128,7 @@ bool DecodeStatusCodes::readBytes(const int code)
     }
 }
 
-bool DecodeStatusCodes::readChar(const char code)
+bool DecodeStatusCodes::readChar(char code)
 {
     switch (code) {
         case 1:
@@ -150,7 +150,7 @@ bool DecodeStatusCodes::readChar(const char code)
     };
 }
 
-bool DecodeStatusCodes::readString(const int code)
+bool DecodeStatusCodes::readString(int code)
 {
     if (code >   0) {
         if (showSuccess) 
@@ -174,7 +174,7 @@ bool DecodeStatusCodes::readString(const int code)
     }
 }
 
-bool DecodeStatusCodes::writeBytes(const char code)
+bool DecodeStatusCodes::writeBytes(char code)
 {
     switch (code) {
         case 1:
@@ -190,7 +190,7 @@ bool DecodeStatusCodes::writeBytes(const char code)
     };
 }
 
-bool DecodeStatusCodes::writeChar(const char code)
+bool DecodeStatusCodes::writeChar(char code)
 {
     switch (code) {
         case 1:
@@ -206,7 +206,7 @@ bool DecodeStatusCodes::writeChar(const char code)
     };
 }
 
-bool DecodeStatusCodes::writeString(const char code)
+bool DecodeStatusCodes::writeString(char code)
 {
     switch (code) {
         case 1:
