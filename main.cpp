@@ -1,20 +1,23 @@
 /**
- * @file VEXnetDriver.cpp
+ * @file main.cpp
  * @author Eric Heinke
- * @date September 27 2022
- * @brief Code for communicating using the VEXnet
+ * @version 0.0
+ * @date September 28 2022
+ * @brief Code for testing communications with the VEXnet using the VEXnetDriver
  */
 
-#include <iostream>
-#include <bitset>
-#include <string>
-#include <sstream>
+#include "lib/VEXnetDriver.h"
+
+// #include <iostream>
+// #include <bitset>
+// #include <string>
+// #include <sstream>
 
 // Serial library
 #include "lib/serialib.h"
 
 // Serial library status code decoding
-#include "DecodeStatusCodes.h"
+#include "lib/DecodeStatusCodes.h"
 
 #if defined (_WIN32) || defined(_WIN64)
     #include<windows.h>
@@ -26,7 +29,7 @@
 #if defined (_WIN32) || defined(_WIN64)
     //for serial ports above "COM9", we must use this extended syntax of "\\.\COMx".
     //also works for COM0 to COM9.
-    #define SERIAL_PORT "\\\\.\\COM6"
+    #define SERIAL_PORT "\\\\.\\COM4"
 #endif
 #if defined (__linux__) || defined(__APPLE__)
     #define SERIAL_PORT "/dev/ttyACM0"

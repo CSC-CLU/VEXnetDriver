@@ -1,6 +1,7 @@
 /**
- * @file /DecodeStatusCodes.h
+ * @file DecodeStatusCodes.h
  * @author Eric Heinke
+ * @version 1.0
  * @date September 27 2022
  * @brief File contains functions for displaying status message from the return status of Philippe Lucidarme's serial library.
  */
@@ -15,7 +16,7 @@ using namespace std;
 class DecodeStatusCodes
 {
 public:
-    DecodeStatusCodes(const char*, bool mode);
+    DecodeStatusCodes(const char *Device, bool showSuccess);
     ~DecodeStatusCodes();
 
     bool flushReceiver(char code);
@@ -31,17 +32,17 @@ private:
     bool showSuccess;
 };
 
-DecodeStatusCodes::DecodeStatusCodes(const char *serial_port, bool showSuccess):
-serial_port(serial_port),
+inline DecodeStatusCodes::DecodeStatusCodes(const char *Device, bool showSuccess):
+serial_port(Device),
 showSuccess(showSuccess)
 // mode true: Display success and failure messages
 // mode false: Display only failure messages
 { }
-DecodeStatusCodes::~DecodeStatusCodes() {
+inline DecodeStatusCodes::~DecodeStatusCodes() {
     delete[] this->serial_port;
 }
 
-bool DecodeStatusCodes::flushReceiver(char code)
+inline bool DecodeStatusCodes::flushReceiver(char code)
 {
     // If code != 0
     if (code) {
@@ -55,7 +56,7 @@ bool DecodeStatusCodes::flushReceiver(char code)
     }
 }
 
-bool DecodeStatusCodes::openDevice(char code)
+inline bool DecodeStatusCodes::openDevice(char code)
 {
     switch (code) {
         case 1:
@@ -95,7 +96,7 @@ bool DecodeStatusCodes::openDevice(char code)
     };
 }
 
-bool DecodeStatusCodes::readBytes(int code)
+inline bool DecodeStatusCodes::readBytes(int code)
 {
     if (code > -1) {
         if (showSuccess) {
@@ -114,7 +115,7 @@ bool DecodeStatusCodes::readBytes(int code)
     }
 }
 
-bool DecodeStatusCodes::readChar(char code)
+inline bool DecodeStatusCodes::readChar(char code)
 {
     switch (code) {
         case 1:
@@ -136,7 +137,7 @@ bool DecodeStatusCodes::readChar(char code)
     };
 }
 
-bool DecodeStatusCodes::readString(int code)
+inline bool DecodeStatusCodes::readString(int code)
 {
     if (code >   0) {
         if (showSuccess) 
@@ -160,7 +161,7 @@ bool DecodeStatusCodes::readString(int code)
     }
 }
 
-bool DecodeStatusCodes::writeBytes(char code)
+inline bool DecodeStatusCodes::writeBytes(char code)
 {
     switch (code) {
         case 1:
@@ -176,7 +177,7 @@ bool DecodeStatusCodes::writeBytes(char code)
     };
 }
 
-bool DecodeStatusCodes::writeChar(char code)
+inline bool DecodeStatusCodes::writeChar(char code)
 {
     switch (code) {
         case 1:
@@ -192,7 +193,7 @@ bool DecodeStatusCodes::writeChar(char code)
     };
 }
 
-bool DecodeStatusCodes::writeString(char code)
+inline bool DecodeStatusCodes::writeString(char code)
 {
     switch (code) {
         case 1:
