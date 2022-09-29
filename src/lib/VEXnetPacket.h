@@ -21,12 +21,16 @@ struct VEXnetPacket {
         JOY_VERSION_REQUEST, // 3a, 0
         JOY_VERSION_REQUEST_RESPONSE // 3b, 2, false
     };
-    unsigned char type=0, size=0, *data = nullptr;
-    bool includeChecksum=true;
+    unsigned char type = 0, size = 0, *data = nullptr;
+    bool includeChecksum = true;
 
-    VEXnetPacket();
-    VEXnetPacket(int type, unsigned char *data);
-    VEXnetPacket(unsigned char type, unsigned char size, unsigned char *data, bool includeChecksum);
+    VEXnetPacket() {};
+
+    VEXnetPacket(PacketType type, unsigned char data[] = nullptr);
+
+    constexpr VEXnetPacket(unsigned char type, unsigned char size,
+                           unsigned char data[] = nullptr, bool includeChecksum = true);
+
     ~VEXnetPacket();
 };
 

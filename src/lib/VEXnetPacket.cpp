@@ -10,21 +10,16 @@
 
 #include <iostream>
 
-VEXnetPacket::VEXnetPacket() {}
-
-VEXnetPacket::VEXnetPacket(int type, 
-                           unsigned char *data = nullptr) {
+VEXnetPacket::VEXnetPacket(PacketType type, unsigned char data[]) {
     switch (type) {
         case LCD_UPDATE:
             this->type = 0x1E;
             this->size = 17;
-            this->data = data ? data : new unsigned char[this->size];
             this->includeChecksum = true;
             break;
         case LCD_UPDATE_RESPONSE:
             this->type = 0x16;
             this->size = 1;
-            this->data = data ? data : new unsigned char[this->size];
             this->includeChecksum = true;
             break;
         case JOY_STATUS_REQUEST:
@@ -34,7 +29,6 @@ VEXnetPacket::VEXnetPacket(int type,
         case JOY_STATUS_REQUEST_RESPONSE:
             this->type = 0x39;
             this->size = 9;
-            this->data = data ? data : new unsigned char[this->size];
             this->includeChecksum = true;
             break;
         case JOY_VERSION_REQUEST:
@@ -44,23 +38,23 @@ VEXnetPacket::VEXnetPacket(int type,
         case JOY_VERSION_REQUEST_RESPONSE:
             this->type = 0x3B;
             this->size = 2;
-            this->data = new unsigned char[this->size];
             this->includeChecksum = false;
             break;
         default:
-            std::cout<<"Error: Invalid packet type specified. Using defaults."<<std::endl;
+            std::cout << "Error: Invalid packet type specified. Using defaults." << std::endl;
     };
+    this->data = data ? data : new unsigned char[this->size];
 }
 
-VEXnetPacket::VEXnetPacket(unsigned char type, 
-                           unsigned char size, 
-                           unsigned char *data = nullptr, 
-                           bool includeChecksum = true) {
-    this->type = type;
-    this->size = size;
-    this->data = data ? data : new unsigned char[size];
-    this->includeChecksum = includeChecksum;
-}
+constexpr VEXnetPacket::VEXnetPacket(unsigned char type,
+                                     unsigned char size,
+                                     unsigned char data[],
+                                     bool includeChecksum)
+                                     : type(type)
+                                     , size(size)
+                                     , data(data ? data : new unsigned char[size])
+                                     , includeChecksum(includeChecksum)
+                                     {}
 
 VEXnetPacket::~VEXnetPacket() {
     delete[] this->data;
