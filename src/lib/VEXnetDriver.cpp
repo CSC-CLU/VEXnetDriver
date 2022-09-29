@@ -32,26 +32,24 @@ void VEXnetDriver::SendVexProtocolPacket(unsigned char PacketType,
         return;
     }
 
-    if (!PayloadSize) return;
+    statusCodes.writeChar(serial.writeChar(0xAA)); // Sync 1
+    statusCodes.writeChar(serial.writeChar(0x55)); // Sync 2
+    statusCodes.writeChar(serial.writeChar(PacketType));
 
-    this->buffer[0] = 0xAA; // Sync 1
-    this->buffer[1] = 0x55; // Sync 2
-    this->buffer[2] = PacketType;
-    this->buffer[3] = PayloadSize+1; // +1 for Checksum
+    if (PayloadSize) {
 
-    unsigned char Checksum = 0;
+        unsigned char Checksum = 0;
 
-    int i = 4;
-    while (PayloadSize--) {
-        unsigned char Byte = *DataBytes++;
-        this->buffer[i] = Byte;
-        Checksum -= Byte;
-        i++;
+        statusCodes.writeChar(serial.writeChar(PayloadSize+1)); // +1 for Checksum
+
+        while (PayloadSize--) {
+            unsigned char Byte = *DataBytes++;
+            statusCodes.writeChar(serial.writeChar(Byte));
+            Checksum -= Byte;
+        }
+
+        statusCodes.writeChar(serial.writeChar(Checksum));
     }
-
-    this->buffer[i] = Checksum;
-
-    this->serial.writeBytes(this->buffer, i);
 }
 
 bool VEXnetDriver::ReceiveVexProtocolPacket(unsigned char *PacketType,
