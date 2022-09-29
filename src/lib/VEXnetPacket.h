@@ -6,8 +6,8 @@
  * @brief 
  */
 
-#ifndef VEXNETDRIVER_VEXNETPACKET_H
-#define VEXNETDRIVER_VEXNETPACKET_H
+#ifndef VEXNETPACKET_H
+#define VEXNETPACKET_H
 
 struct VEXnetPacket {
     enum PacketType {
@@ -31,7 +31,10 @@ struct VEXnetPacket {
     constexpr VEXnetPacket(unsigned char type, unsigned char size,
                            unsigned char data[] = nullptr, bool includeChecksum = true);
 
-    ~VEXnetPacket();
+    VEXnetPacket();
+    VEXnetPacket(int type, unsigned char *data);
+    VEXnetPacket(unsigned char type, unsigned char size, unsigned char *data, bool includeChecksum);
+    ~VEXnetPacket() {delete[] this->data;};
 };
 
-#endif //VEXNETDRIVER_VEXNETPACKET_H
+#endif //VEXNETPACKET_H

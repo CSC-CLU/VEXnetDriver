@@ -11,27 +11,27 @@
 
 #include "serialib.h"
 #include "DecodeStatusCodes.h"
-
-static const unsigned int VEXnet_Joystick_Partner_Port = 115200;
-static const unsigned int VEX_LCD_Display = 19200;
+#include "VEXnetPacket.h"
 
 struct VEXnetDriver {
+    enum DeviceType {
+        VEX_LCD_Display,
+        VEXnet_Joystick_Partner_Port
+    };
+
+    VEXnetDriver() {};
+    VEXnetDriver(const char *device, DeviceType deviceType, bool showSuccess);
+    VEXnetDriver(const char *device, unsigned int bauds, SerialDataBits dataBits, 
+                 SerialParity parity, SerialStopBits stopBits, bool showSuccess);
+    ~VEXnetDriver() {serial.closeDevice();};
+
+    bool isDeviceOpen();
+    void SendVexProtocolPacket(VEXnetPacket packet);
+    VEXnetPacket& ReceiveVexProtocolPacket();
+
 private:
     serialib serial;
     DecodeStatusCodes statusCodes;
-    char *buffer;
-public:
-    VEXnetDriver(const char *Device, bool showSuccess, unsigned int Bauds);
-    ~VEXnetDriver();
-    bool isDeviceOpen();
-    void SendVexProtocolPacket(unsigned char PacketType,
-                               unsigned char PayloadSize,
-                               unsigned char *DataBytes,
-                               bool includeChecksum);
-    bool ReceiveVexProtocolPacket(unsigned char *PacketType,
-                                  unsigned char *PayloadSize,
-                                  unsigned char *DataBytes);
-    void PartnerJoystick_RespondToStatusRequest(unsigned char *DataBytes);
 };
 
 #endif // VEXNETDRIVER_H

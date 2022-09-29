@@ -8,96 +8,108 @@
 
 #include "VEXnetDriver.h"
 
-VEXnetDriver::VEXnetDriver(const char *Device, bool showSuccess = false, unsigned int Bauds = VEXnet_Joystick_Partner_Port):
-serial(),
-statusCodes(Device, showSuccess)
-{
-    statusCodes.openDevice(this->serial.openDevice(Device, Bauds, SERIAL_DATABITS_8, SERIAL_PARITY_NONE, SERIAL_STOPBITS_1));
-    this->buffer = new char[256]; // Is this variable needed?
-}
+#include <iostream>
 
-VEXnetDriver::~VEXnetDriver() { }
+VEXnetDriver::VEXnetDriver(const char *device, DeviceType deviceType, bool showSuccess):
+statusCodes(device, showSuccess)
+{
+    switch (deviceType) {
+        case VEX_LCD_Display:
+            statusCodes.openDevice(serial.openDevice(device, 19200, 
+                                   SERIAL_DATABITS_8, SERIAL_PARITY_NONE, SERIAL_STOPBITS_1));
+            break;
+        case VEXnet_Joystick_Partner_Port:
+            statusCodes.openDevice(serial.openDevice(device, 115200, 
+                                   SERIAL_DATABITS_8, SERIAL_PARITY_NONE, SERIAL_STOPBITS_1));
+            break;
+        default:
+            std::cout<<"Error: Invalid device type specified."<<std::endl;
+    };
+}
 
 bool VEXnetDriver::isDeviceOpen()
 {
     return this->serial.isDeviceOpen();
 }
 
-void VEXnetDriver::SendVexProtocolPacket(unsigned char PacketType,
-                                         unsigned char PayloadSize,
-                                         unsigned char *DataBytes,
-                                         bool includeChecksum = true)
-{
-    if (!this->serial.isDeviceOpen()) { // If the serial device is not open, return.
-        cout<<"Error: Serial device is not open"<<endl;
-        return;
-    }
+void VEXnetDriver::SendVexProtocolPacket(VEXnetPacket packet) {
 
-    statusCodes.writeChar(serial.writeChar(0xAA)); // Sync 1
-    statusCodes.writeChar(serial.writeChar(0x55)); // Sync 2
-    statusCodes.writeChar(serial.writeChar(PacketType));
-
-    if (PayloadSize) {
-
-        unsigned char Checksum = 0;
-
-        statusCodes.writeChar(serial.writeChar(PayloadSize+1)); // +1 for Checksum
-
-        while (PayloadSize--) {
-            unsigned char Byte = *DataBytes++;
-            statusCodes.writeChar(serial.writeChar(Byte));
-            Checksum -= Byte;
-        }
-
-        if (includeChecksum)
-            statusCodes.writeChar(serial.writeChar(Checksum));
-    }
 }
 
-bool VEXnetDriver::ReceiveVexProtocolPacket(unsigned char *PacketType,
-                                            unsigned char *PayloadSize,
-                                            unsigned char *DataBytes)
-{
-    if (!this->serial.isDeviceOpen()) { // If the serial device is not open, return.
-        cout<<"Error: Serial device is not open"<<endl;
-        return false;
-    }
-
-    if (serial.available()) return false; // If there is nothing in the serial buffer, return.
-
-    unsigned char Checksum = 0;
-
-    char *chr;
-
-    statusCodes.readChar(serial.readChar(chr));
-    if (*chr != (char)0xaa)
-        return false; // Expect Sync 1
-
-    statusCodes.readChar(serial.readChar(chr));
-    if (*chr != 0x55)
-        return false; // Expect Sync 2
-
-    statusCodes.readChar(serial.readChar(chr));
-    *PacketType = *chr;
-
-    if (PayloadSize) { // We are expecting data (PayloadSize != null)
-        statusCodes.readChar(serial.readChar(chr));
-        unsigned char Bytes = *chr;
-
-        *PayloadSize = Bytes-1;
-
-        while (Bytes--) {
-            statusCodes.readChar(serial.readChar(chr));
-            unsigned char Byte = *chr;
-            *DataBytes++ = Byte;
-            Checksum += Byte;
-        }
-    }
-
-    return (Checksum==0);
+VEXnetPacket& VEXnetDriver::ReceiveVexProtocolPacket() {
+    return VEXnetPacket();
 }
 
-void VEXnetDriver::PartnerJoystick_RespondToStatusRequest(unsigned char *DataBytes) {
-    // DataBytes must have 9 bytes of data
-    this->SendVexProtocolPacket(0x39, 0x09, DataBytes);
-}
+// void VEXnetDriver::SendVexProtocolPacket(unsigned char PacketType,
+//                                          unsigned char PayloadSize,
+//                                          unsigned char *DataBytes,
+//                                          bool includeChecksum = true)
+// {
+//     if (!this->serial.isDeviceOpen()) { // If the serial device is not open, return.
+//         cout<<"Error: Serial device is not open"<<endl;
+//         return;
+//     }
+
+//     statusCodes.writeChar(serial.writeChar(0xAA)); // Sync 1
+//     statusCodes.writeChar(serial.writeChar(0x55)); // Sync 2
+//     statusCodes.writeChar(serial.writeChar(PacketType));
+
+//     if (PayloadSize) {
+
+//         unsigned char Checksum = 0;
+
+//         statusCodes.writeChar(serial.writeChar(PayloadSize+1)); // +1 for Checksum
+
+//         while (PayloadSize--) {
+//             unsigned char Byte = *DataBytes++;
+//             statusCodes.writeChar(serial.writeChar(Byte));
+//             Checksum -= Byte;
+//         }
+
+//         if (includeChecksum)
+//             statusCodes.writeChar(serial.writeChar(Checksum));
+//     }
+// }
+
+// bool VEXnetDriver::ReceiveVexProtocolPacket(unsigned char *PacketType,
+//                                             unsigned char *PayloadSize,
+//                                             unsigned char *DataBytes)
+// {
+//     if (!this->serial.isDeviceOpen()) { // If the serial device is not open, return.
+//         cout<<"Error: Serial device is not open"<<endl;
+//         return false;
+//     }
+
+//     if (serial.available()) return false; // If there is nothing in the serial buffer, return.
+
+//     unsigned char Checksum = 0;
+
+//     char *chr;
+
+//     statusCodes.readChar(serial.readChar(chr));
+//     if (*chr != (char)0xaa)
+//         return false; // Expect Sync 1
+
+//     statusCodes.readChar(serial.readChar(chr));
+//     if (*chr != 0x55)
+//         return false; // Expect Sync 2
+
+//     statusCodes.readChar(serial.readChar(chr));
+//     *PacketType = *chr;
+
+//     if (PayloadSize) { // We are expecting data (PayloadSize != null)
+//         statusCodes.readChar(serial.readChar(chr));
+//         unsigned char Bytes = *chr;
+
+//         *PayloadSize = Bytes-1;
+
+//         while (Bytes--) {
+//             statusCodes.readChar(serial.readChar(chr));
+//             unsigned char Byte = *chr;
+//             *DataBytes++ = Byte;
+//             Checksum += Byte;
+//         }
+//     }
+
+//     return (Checksum==0);
+// }

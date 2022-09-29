@@ -16,6 +16,7 @@ using namespace std;
 class DecodeStatusCodes
 {
 public:
+    DecodeStatusCodes();
     DecodeStatusCodes(const char *Device, bool showSuccess);
     ~DecodeStatusCodes();
 
@@ -28,11 +29,11 @@ public:
     bool writeChar(char code);
     bool writeString(char code);
 private:
-    const char *serial_port;
-    bool showSuccess;
+    const char *serial_port = nullptr;
+    bool showSuccess = false;
 };
 
-inline DecodeStatusCodes::DecodeStatusCodes(const char *Device, bool showSuccess):
+inline DecodeStatusCodes::DecodeStatusCodes(const char *Device, bool showSuccess = false):
 serial_port(Device),
 showSuccess(showSuccess)
 // mode true: Display success and failure messages
