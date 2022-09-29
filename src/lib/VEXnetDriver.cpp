@@ -8,12 +8,12 @@
 
 #include "VEXnetDriver.h"
 
-VEXnetDriver::VEXnetDriver(const char *Device, bool showSuccess = false):
+VEXnetDriver::VEXnetDriver(const char *Device, bool showSuccess = false, unsigned int Bauds = VEXnet_Joystick_Partner_Port):
 serial(),
 statusCodes(Device, showSuccess)
 {
-    statusCodes.openDevice(this->serial.openDevice(Device, 115200, SERIAL_DATABITS_8, SERIAL_PARITY_NONE, SERIAL_STOPBITS_1));
-    this->buffer = new char[100];
+    statusCodes.openDevice(this->serial.openDevice(Device, Bauds, SERIAL_DATABITS_8, SERIAL_PARITY_NONE, SERIAL_STOPBITS_1));
+    this->buffer = new char[256]; // Is this variable needed?
 }
 
 VEXnetDriver::~VEXnetDriver() { }
@@ -25,7 +25,8 @@ bool VEXnetDriver::isDeviceOpen()
 
 void VEXnetDriver::SendVexProtocolPacket(unsigned char PacketType,
                                          unsigned char PayloadSize,
-                                         unsigned char *DataBytes)
+                                         unsigned char *DataBytes,
+                                         bool includeChecksum = true)
 {
     if (!this->serial.isDeviceOpen()) { // If the serial device is not open, return.
         cout<<"Error: Serial device is not open"<<endl;
@@ -48,7 +49,8 @@ void VEXnetDriver::SendVexProtocolPacket(unsigned char PacketType,
             Checksum -= Byte;
         }
 
-        statusCodes.writeChar(serial.writeChar(Checksum));
+        if (includeChecksum)
+            statusCodes.writeChar(serial.writeChar(Checksum));
     }
 }
 
@@ -58,7 +60,7 @@ bool VEXnetDriver::ReceiveVexProtocolPacket(unsigned char *PacketType,
 {
     if (!this->serial.isDeviceOpen()) { // If the serial device is not open, return.
         cout<<"Error: Serial device is not open"<<endl;
-        return;
+        return false;
     }
 
     if (serial.available()) return false; // If there is nothing in the serial buffer, return.
@@ -93,4 +95,9 @@ bool VEXnetDriver::ReceiveVexProtocolPacket(unsigned char *PacketType,
     }
 
     return (Checksum==0);
+}
+
+void VEXnetDriver::PartnerJoystick_RespondToStatusRequest(unsigned char *DataBytes) {
+    // DataBytes must have 9 bytes of data
+    this->SendVexProtocolPacket(0x39, 0x09, DataBytes);
 }

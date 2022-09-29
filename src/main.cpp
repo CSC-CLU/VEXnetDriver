@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 
 
         *PacketType = 0x39;
-        *PayloadSize = 0x0A;
+        *PayloadSize = 0x09;
         DataBytes[0] = 0x7F; // Joystick 1
         DataBytes[1] = 0x7F; // Joystick 2
         DataBytes[2] = 0x7F; // Joystick 3
