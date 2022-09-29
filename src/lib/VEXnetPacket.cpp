@@ -55,7 +55,3 @@ constexpr VEXnetPacket::VEXnetPacket(unsigned char type,
                                      , data(data ? data : new unsigned char[size])
                                      , includeChecksum(includeChecksum)
                                      {}
-
-VEXnetPacket::~VEXnetPacket() {
-    delete[] this->data;
-}

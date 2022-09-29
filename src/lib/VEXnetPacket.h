@@ -31,10 +31,7 @@ struct VEXnetPacket {
     constexpr VEXnetPacket(unsigned char type, unsigned char size,
                            unsigned char data[] = nullptr, bool includeChecksum = true);
 
-    VEXnetPacket();
-    VEXnetPacket(int type, unsigned char *data);
-    VEXnetPacket(unsigned char type, unsigned char size, unsigned char *data, bool includeChecksum);
-    ~VEXnetPacket() {delete[] this->data;};
+    ~VEXnetPacket() { delete[] this->data; };
 };
 
 #endif //VEXNETPACKET_H
