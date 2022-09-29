@@ -27,7 +27,7 @@ struct VEXnetDriver {
 
     bool isDeviceOpen();
     void SendVexProtocolPacket(VEXnetPacket packet);
-    VEXnetPacket& ReceiveVexProtocolPacket();
+    VEXnetPacket* ReceiveVexProtocolPacket();
 
 private:
     serialib serial;

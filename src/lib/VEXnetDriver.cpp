@@ -36,8 +36,8 @@ void VEXnetDriver::SendVexProtocolPacket(VEXnetPacket packet) {
 
 }
 
-VEXnetPacket& VEXnetDriver::ReceiveVexProtocolPacket() {
-    return VEXnetPacket();
+VEXnetPacket* VEXnetDriver::ReceiveVexProtocolPacket() {
+    return nullptr;
 }
 
 // void VEXnetDriver::SendVexProtocolPacket(unsigned char PacketType,
