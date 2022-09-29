@@ -8,7 +8,7 @@
 
 #include "lib/VEXnetDriver.h"
 
-// #include <iostream>
+#include <iostream>
 // #include <bitset>
 // #include <string>
 // #include <sstream>

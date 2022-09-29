@@ -1,6 +1,10 @@
-//
-// Created by Zrp200 on 9/29/2022.
-//
+/**
+ * @file VEXnetPacket.cpp
+ * @author Eric Heinke, Zrp200
+ * @version 0.0
+ * @date September 29 2022
+ * @brief 
+ */
 
 #ifndef VEXNETDRIVER_VEXNETPACKET_H
 #define VEXNETDRIVER_VEXNETPACKET_H
@@ -19,6 +23,11 @@ struct VEXnetPacket {
     };
     unsigned char type=0, size=0, *data = nullptr;
     bool includeChecksum=true;
+
+    VEXnetPacket();
+    VEXnetPacket(int type, unsigned char *data);
+    VEXnetPacket(unsigned char type, unsigned char size, unsigned char *data, bool includeChecksum);
+    ~VEXnetPacket();
 };
 
 #endif //VEXNETDRIVER_VEXNETPACKET_H

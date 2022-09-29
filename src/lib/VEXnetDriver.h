@@ -2,7 +2,7 @@
  * @file VEXnetDriver.h
  * @author Eric Heinke
  * @version 0.0
- * @date September 28 2022
+ * @date September 29 2022
  * @brief Code for communicating using the VEXnet
  */
 
