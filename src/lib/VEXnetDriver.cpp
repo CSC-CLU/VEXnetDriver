@@ -27,7 +27,7 @@ void VEXnetDriver::SendVexProtocolPacket(unsigned char PacketType,
                                          unsigned char PayloadSize,
                                          unsigned char *DataBytes)
 {
-    if (!this->serial.isDeviceOpen()) {
+    if (!this->serial.isDeviceOpen()) { // If the serial device is not open, return.
         cout<<"Error: Serial device is not open"<<endl;
         return;
     }
@@ -54,40 +54,45 @@ void VEXnetDriver::SendVexProtocolPacket(unsigned char PacketType,
     this->serial.writeBytes(this->buffer, i);
 }
 
-// char readChar() {
-//     char* tmpChar;
-//     serial.readChar(tmpChar);
-//     return *tmpChar;
-// }
+bool VEXnetDriver::ReceiveVexProtocolPacket(unsigned char *PacketType,
+                                            unsigned char *PayloadSize,
+                                            unsigned char *DataBytes)
+{
+    if (!this->serial.isDeviceOpen()) { // If the serial device is not open, return.
+        cout<<"Error: Serial device is not open"<<endl;
+        return;
+    }
 
-// bool ReceiveVexProtocolPacket(unsigned char *PacketType,
-//                               unsigned char *PayloadSize,
-//                               unsigned char *DataBytes)
-// {
-//     if (!serial.isDeviceOpen()) return false; // If the serial device is not open, return.
-//     if (serial.available()) return false; // If there is nothing in the serial buffer, return.
+    if (serial.available()) return false; // If there is nothing in the serial buffer, return.
 
-//     unsigned char Checksum=0;
+    unsigned char Checksum = 0;
 
-//     if (readChar() != 0xaa)
-//         return false; // Expect Sync 1
+    char *chr;
 
-//     if (readChar() != 0x55)
-//         return false; // Expect Sync 2
+    statusCodes.readChar(serial.readChar(chr));
+    if (*chr != (char)0xaa)
+        return false; // Expect Sync 1
 
-//     *PacketType = readChar();
+    statusCodes.readChar(serial.readChar(chr));
+    if (*chr != 0x55)
+        return false; // Expect Sync 2
 
-//     if (PayloadSize) { // We are expecting data
-//         unsigned char Bytes = readChar();
+    statusCodes.readChar(serial.readChar(chr));
+    *PacketType = *chr;
 
-//         *PayloadSize = Bytes-1;
+    if (PayloadSize) { // We are expecting data (PayloadSize != null)
+        statusCodes.readChar(serial.readChar(chr));
+        unsigned char Bytes = *chr;
 
-//         while (Bytes--) {
-//             unsigned char Byte = readChar();
-//             *DataBytes++ = Byte;
-//             Checksum += Byte;
-//         }
-//     }
+        *PayloadSize = Bytes-1;
 
-//     return (Checksum==0);
-// }
+        while (Bytes--) {
+            statusCodes.readChar(serial.readChar(chr));
+            unsigned char Byte = *chr;
+            *DataBytes++ = Byte;
+            Checksum += Byte;
+        }
+    }
+
+    return (Checksum==0);
+}
