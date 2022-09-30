@@ -10,33 +10,28 @@
 
 #include <iostream>
 
-VEXnetDriver::VEXnetDriver(const char *device, DeviceType deviceType, bool showSuccess):
-statusCodes(device, showSuccess)
-{
+VEXnetDriver::VEXnetDriver(const char *device, DeviceType deviceType, bool showSuccess) :
+        statusCodes(device, showSuccess) {
+    unsigned int bauds;
     switch (deviceType) {
         case VEX_LCD_Display:
-            statusCodes.openDevice(serial.openDevice(device, 19200, 
-                                   SERIAL_DATABITS_8, SERIAL_PARITY_NONE, SERIAL_STOPBITS_1));
+            bauds = 19200;
             break;
         case VEXnet_Joystick_Partner_Port:
-            statusCodes.openDevice(serial.openDevice(device, 115200, 
-                                   SERIAL_DATABITS_8, SERIAL_PARITY_NONE, SERIAL_STOPBITS_1));
+            bauds = 115200;
             break;
         default:
-            std::cout<<"Error: Invalid device type specified."<<std::endl;
+            std::cout << "Error: Invalid device type specified." << std::endl;
+            return;
     };
-}
-
-bool VEXnetDriver::isDeviceOpen()
-{
-    return this->serial.isDeviceOpen();
+    statusCodes.openDevice(serial.openDevice(device, bauds));
 }
 
 void VEXnetDriver::SendVexProtocolPacket(VEXnetPacket packet) {
 
 }
 
-VEXnetPacket* VEXnetDriver::ReceiveVexProtocolPacket() {
+VEXnetPacket *VEXnetDriver::ReceiveVexProtocolPacket() {
     return nullptr;
 }
 
