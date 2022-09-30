@@ -7,6 +7,7 @@
  */
 
 #include "lib/VEXnetDriver.h"
+#include "lib/VEXnetPacket.h"
 
 #include <iostream>
 // #include <bitset>
@@ -69,19 +70,6 @@ int main(int argc, char *argv[])
 
     // Display status code message
     statusCodes.flushReceiver(statusCode);
-
-    // cout<<"Select operation to perform:"<<endl;
-    // cout<<"\t1: Get controller status (x1)"<<endl;
-    // cout<<"\t2: Get controller status (x10)"<<endl;
-    // cout<<"\t3: Get controller status (infinite)"<<endl;
-    // cout<<"\t4: Play tower light animation"<<endl;
-    // cout<<"\t5: Play flatline sound effect"<<endl;
-    // cout<<"\t6: Nunchuck Controller Settings"<<endl;
-    // cout<<"\t7: Set button color"<<endl;
-    // cout<<"> ";
-    // int mode;
-    // cin>>mode;
-    // // mode = 2;
 
     unsigned char *PacketType;
     unsigned char *PayloadSize;
