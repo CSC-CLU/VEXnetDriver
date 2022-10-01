@@ -66,41 +66,81 @@ void VEXnetDriver::SendVexProtocolPacket(const VEXnetPacket &packet) {
 }
 
 VEXnetPacket *VEXnetDriver::ReceiveVexProtocolPacket() {
-    return nullptr;
-}
+    if (!this->serial.isDeviceOpen()) { // If the serial device is not open, return.
+        std::cout<<"Error: Serial device is not open"<<std::endl;
+        return nullptr;
+    }
 
-// bool VEXnetDriver::ReceiveVexProtocolPacket(unsigned char *PacketType,
-//                                             unsigned char *PayloadSize,
-//                                             unsigned char *DataBytes)
-// {
-//     if (!this->serial.isDeviceOpen()) { // If the serial device is not open, return.
-//         cout<<"Error: Serial device is not open"<<endl;
-//         return false;
-//     }
-//     if (serial.available()) return false; // If there is nothing in the serial buffer, return.
-//     unsigned char Checksum = 0;
-//     char *chr;
-//     statusCodes.readChar(serial.readChar(chr));
-//     if (*chr != (char)0xaa)
-//         return false; // Expect Sync 1
-//     statusCodes.readChar(serial.readChar(chr));
-//     if (*chr != 0x55)
-//         return false; // Expect Sync 2
-//     statusCodes.readChar(serial.readChar(chr));
-//     *PacketType = *chr;
-//     if (PayloadSize) { // We are expecting data (PayloadSize != null)
-//         statusCodes.readChar(serial.readChar(chr));
-//         unsigned char Bytes = *chr;
-//         *PayloadSize = Bytes-1;
-//         while (Bytes--) {
-//             statusCodes.readChar(serial.readChar(chr));
-//             unsigned char Byte = *chr;
-//             *DataBytes++ = Byte;
-//             Checksum += Byte;
-//         }
-//     }
-//     return (Checksum==0);
-// }
+    if (serial.available()) return nullptr; // If there is nothing in the serial buffer, return.
+
+    unsigned char Checksum = 0;
+
+    char *chr;
+
+    readChar(chr); // Sync 1
+    if (*chr != (char)0xaa)
+        return nullptr; // Expect Sync 1
+        
+    readChar(chr); // Sync 2
+    if (*chr != 0x55)
+        return nullptr; // Expect Sync 2
+    
+    readChar(chr); // Packet type
+    VEXnetPacket *packet = nullptr;
+    switch (*chr) {
+        case 0x1E:
+            packet = new VEXnetPacket(VEXnetPacket::LCD_UPDATE);
+            break;
+        case 0x16:
+            packet = new VEXnetPacket(VEXnetPacket::LCD_UPDATE_RESPONSE);
+            break;
+        case 0x3B:
+            // packet = new VEXnetPacket(VEXnetPacket::JOY_STATUS_REQUEST);
+            // return packet;
+            packet = new VEXnetPacket(VEXnetPacket::JOY_VERSION_REQUEST_RESPONSE);
+            break;
+        case 0x39:
+            packet = new VEXnetPacket(VEXnetPacket::JOY_STATUS_REQUEST_RESPONSE);
+            break;
+        case 0x3A:
+            packet = new VEXnetPacket(VEXnetPacket::JOY_VERSION_REQUEST);
+            return packet;
+        default:
+            packet = new VEXnetPacket();
+            packet->type = *chr;
+            if (readChar(chr)) { // If another character was able to be read
+                packet->size = *chr - 1;
+                packet->data = new unsigned char[packet->size];
+                for (int i = 0; i < packet->size; i++) {
+                    readChar(chr); // Payload byte
+                    packet->data[i] = *chr;
+                    Checksum += *chr;
+                }
+                if (Checksum == 0) // If checksum is correct
+                    return packet;
+                else
+                    return nullptr;
+            return packet;
+    }
+    };
+
+    readChar(chr); // Packet size
+    if (*chr != packet->size) {
+        std::cout<<"Error: packet size is not correct"<<std::endl;
+        return nullptr;
+    }
+
+    for (int i = 0; i < packet->size; i++) {
+        readChar(chr); // Payload byte
+        packet->data[i] = *chr;
+        Checksum += *chr;
+    }
+
+    if (Checksum == 0) // If checksum is correct
+        return packet;
+    else
+        return nullptr;
+}
 
 bool VEXnetDriver::openDevice(const char *Device, const unsigned int Bauds,
                     SerialDataBits Databits, SerialParity Parity, SerialStopBits Stopbits) {
@@ -159,7 +199,7 @@ bool VEXnetDriver::writeChar(const char Byte) {
     };
 }
 
-bool VEXnetDriver::readChar(char *pByte,const unsigned int timeOut_ms = 0) {
+bool VEXnetDriver::readChar(char *pByte, const unsigned int timeOut_ms) {
     int code = serial.readChar(pByte, timeOut_ms);
     switch (code) {
         case 1:
@@ -200,7 +240,7 @@ bool VEXnetDriver::writeString(const char *String) {
 bool VEXnetDriver::readString(char *receivedString,
                               char finalChar,
                               unsigned int maxNbBytes,
-                              const unsigned int timeOut_ms = 0) {
+                              const unsigned int timeOut_ms) {
     int code = serial.readString(receivedString, finalChar, maxNbBytes, timeOut_ms);
     if (code >   0) {
         if (showSuccess) 
@@ -240,8 +280,8 @@ bool VEXnetDriver::writeBytes(const void *Buffer, const unsigned int NbBytes) {
     };
 }
 
-bool VEXnetDriver::readBytes(void *buffer, unsigned int maxNbBytes, const unsigned int timeOut_ms = 0, 
-                             unsigned int sleepDuration_us = 100) {
+bool VEXnetDriver::readBytes(void *buffer, unsigned int maxNbBytes, const unsigned int timeOut_ms, 
+                             unsigned int sleepDuration_us) {
     int code = readBytes(buffer, maxNbBytes, timeOut_ms, sleepDuration_us);
     if (code > -1) {
         if (showSuccess) {
