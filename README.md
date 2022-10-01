@@ -12,3 +12,5 @@ The driver is in early development and is currently incomplete.
 * [Archived page (Thanks archive.org!)](https://web.archive.org/web/20150311093708/https://www.vexrobotics.com/wiki/Vex_Packet_Protocol)
 
 ## Acknowledgement
+### serialib
+Thanks to Fifi Lulu (imabot2) for the [serial library](https://github.com/imabot2/serialib)

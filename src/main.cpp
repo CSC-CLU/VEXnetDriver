@@ -1,8 +1,8 @@
 /**
  * @file main.cpp
- * @author Eric Heinke
+ * @author Eric Heinke (sudo-Eric)
  * @version 0.0
- * @date September 28 2022
+ * @date September 30 2022
  * @brief Code for testing communications with the VEXnet using the VEXnetDriver
  */
 
@@ -56,9 +56,7 @@ int main(int argc, char *argv[])
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Serial Communication
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Serial object
-    // serialib serial; // Moved above
-    // DecodeStatusCodes statusCodes(false); // Moved above
+    // VEXnetDriver vexDriver = VEXnetDriver(SERIAL_PORT, VEXnetDriver::VEXnet_Joystick_Partner_Port, false);
 
     // Connection to serial port
     char statusCode = serial.openDevice(SERIAL_PORT, 115200, SERIAL_DATABITS_8, SERIAL_PARITY_NONE, SERIAL_STOPBITS_1);
@@ -118,7 +116,13 @@ int main(int argc, char *argv[])
         DataBytes[7] = 0x7F; // Accel X
         DataBytes[8] = 0x7F; // Accel Z
 
-        SendVexProtocolPacket(*PacketType, *PayloadSize, DataBytes);        
+        SendVexProtocolPacket(*PacketType, *PayloadSize, DataBytes);
+
+        // VEXnetPacket *packet = VEXnetPacket::compileControllerPacket(
+        //     0x7F, 0x7F, 0x7F, 0x7F, false, false, false, false, false, 
+        //     false, false, false, false, false, false, false, 0x7f, 0x7f, 0x7f);
+        // vexDriver.SendVexProtocolPacket(*packet);
+        // delete packet;
     }
 
     delete PacketType;
