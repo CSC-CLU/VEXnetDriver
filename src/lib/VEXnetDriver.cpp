@@ -29,6 +29,7 @@ VEXnetDriver::VEXnetDriver(const char *device, DeviceType deviceType, bool showS
     openDevice(device, bauds);
 }
 
+
 VEXnetDriver::VEXnetDriver(const char *device, unsigned int bauds, SerialDataBits dataBits, 
                            SerialParity parity, SerialStopBits stopBits, bool showSuccess) :
     serial_port(device),
@@ -36,6 +37,10 @@ VEXnetDriver::VEXnetDriver(const char *device, unsigned int bauds, SerialDataBit
     {
     openDevice(device, bauds, dataBits, parity, stopBits);
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                      SendVexProtocolPacket                                     //
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void VEXnetDriver::SendVexProtocolPacket(const VEXnetPacket &packet) {
     if (!serial.isDeviceOpen()) { // If the serial device is not open, return.
@@ -64,6 +69,10 @@ void VEXnetDriver::SendVexProtocolPacket(const VEXnetPacket &packet) {
             writeChar(Checksum);
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                    ReceiveVexProtocolPacket                                    //
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 VEXnetPacket *VEXnetDriver::ReceiveVexProtocolPacket() {
     if (!this->serial.isDeviceOpen()) { // If the serial device is not open, return.
@@ -136,11 +145,15 @@ VEXnetPacket *VEXnetDriver::ReceiveVexProtocolPacket() {
         Checksum += *chr;
     }
 
-    if (Checksum == 0) // If checksum is correct
+    if (Checksum == 0 || !packet->includeChecksum) // If checksum is correct
         return packet;
     else
         return nullptr;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//            Supporting functions for the serial library to interprite responce codes            //
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 bool VEXnetDriver::openDevice(const char *Device, const unsigned int Bauds,
                     SerialDataBits Databits, SerialParity Parity, SerialStopBits Stopbits) {
