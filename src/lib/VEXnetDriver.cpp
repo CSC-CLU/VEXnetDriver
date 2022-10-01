@@ -27,7 +27,7 @@ VEXnetDriver::VEXnetDriver(const char *device, DeviceType deviceType, bool showS
     statusCodes.openDevice(serial.openDevice(device, bauds));
 }
 
-void VEXnetDriver::SendVexProtocolPacket(VEXnetPacket packet) {
+void VEXnetDriver::SendVexProtocolPacket(const VEXnetPacket &packet) {
     if (!this->serial.isDeviceOpen()) { // If the serial device is not open, return.
         cout<<"Error: Serial device is not open"<<endl;
         return;

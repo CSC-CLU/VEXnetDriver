@@ -55,3 +55,12 @@ constexpr VEXnetPacket::VEXnetPacket(unsigned char type,
                                      , data(data ? data : new unsigned char[size])
                                      , includeChecksum(includeChecksum)
                                      {}
+
+VEXnetPacket::VEXnetPacket(const VEXnetPacket &packet):
+type(packet.type),
+size(packet.size),
+includeChecksum(packet.includeChecksum)
+{
+    this->data = new unsigned char[this->size];
+    memcpy(this->data, packet.data, this->size);
+}

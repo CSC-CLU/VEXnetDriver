@@ -31,6 +31,8 @@ struct VEXnetPacket {
     constexpr VEXnetPacket(unsigned char type, unsigned char size,
                            unsigned char data[] = nullptr, bool includeChecksum = true);
 
+    VEXnetPacket(const VEXnetPacket &packet);
+
     ~VEXnetPacket() { delete[] this->data; };
 
     static VEXnetPacket* compileControllerPacket(unsigned char joystick_1,
