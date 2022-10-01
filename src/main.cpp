@@ -17,9 +17,6 @@
 // Serial library
 #include "lib/serialib.h"
 
-// Serial library status code decoding
-#include "lib/DecodeStatusCodes.h"
-
 #if defined (_WIN32) || defined(_WIN64)
     #include<windows.h>
 #endif
@@ -49,7 +46,6 @@ bool ReceiveVexProtocolPacket(unsigned char*, unsigned char*, unsigned char*);
 
 // Serial object
 serialib serial;
-DecodeStatusCodes statusCodes(SERIAL_PORT, false);
 
 int main(int argc, char *argv[])
 {
@@ -62,12 +58,9 @@ int main(int argc, char *argv[])
     char statusCode = serial.openDevice(SERIAL_PORT, 115200, SERIAL_DATABITS_8, SERIAL_PARITY_NONE, SERIAL_STOPBITS_1);
 
     // If connection fails, display error message and exit. Otherwise, display a success message
-    if (statusCodes.openDevice(statusCode) == false) return 1;
+    if (statusCode < 2) return 1;
 
     statusCode = serial.flushReceiver();
-
-    // Display status code message
-    statusCodes.flushReceiver(statusCode);
 
     unsigned char *PacketType;
     unsigned char *PayloadSize;

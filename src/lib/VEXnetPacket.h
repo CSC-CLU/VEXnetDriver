@@ -1,5 +1,5 @@
 /**
- * @file VEXnetPacket.cpp
+ * @file VEXnetPacket.h
  * @author Eric Heinke (sudo-Eric), Zrp200
  * @version 0.5a
  * @date September 30 2022

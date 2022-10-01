@@ -10,7 +10,6 @@
 #define VEXNETDRIVER_H
 
 #include "serialib.h"
-#include "DecodeStatusCodes.h"
 #include "VEXnetPacket.h"
 
 struct VEXnetDriver {
@@ -20,9 +19,9 @@ struct VEXnetDriver {
     };
 
     VEXnetDriver() {};
-    VEXnetDriver(const char *device, DeviceType deviceType, bool showSuccess);
+    VEXnetDriver(const char *device, DeviceType deviceType, bool showSuccess = false);
     VEXnetDriver(const char *device, unsigned int bauds, SerialDataBits dataBits, 
-                 SerialParity parity, SerialStopBits stopBits, bool showSuccess);
+                 SerialParity parity, SerialStopBits stopBits, bool showSuccess = false);
     ~VEXnetDriver() {serial.closeDevice();};
 
     bool isDeviceOpen() { return serial.isDeviceOpen(); }
@@ -31,7 +30,20 @@ struct VEXnetDriver {
 
 private:
     serialib serial;
-    DecodeStatusCodes statusCodes;
+    const char *serial_port = nullptr;
+    bool showSuccess = false;
+private:
+    bool openDevice(const char *device, const unsigned int bauds, SerialDataBits dataBits = SERIAL_DATABITS_8, 
+                    SerialParity parity = SERIAL_PARITY_NONE, SerialStopBits stopBits = SERIAL_STOPBITS_1);
+    bool writeChar(const char Byte);
+    bool readChar(char *pByte,const unsigned int timeOut_ms);
+    bool writeString(const char *String);
+    bool readString(char *receivedString, char finalChar, unsigned int maxNbBytes, 
+                    const unsigned int timeOut_ms);
+    bool writeBytes(const void *Buffer, const unsigned int NbBytes);
+    bool readBytes(void *buffer, unsigned int maxNbBytes, const unsigned int timeOut_ms, 
+                   unsigned int sleepDuration_us);
+    bool flushReceiver();
 };
 
 #endif // VEXNETDRIVER_H
