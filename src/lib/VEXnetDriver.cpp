@@ -104,9 +104,9 @@ VEXnetPacket *VEXnetDriver::ReceiveVexProtocolPacket() {
             packet = new VEXnetPacket(VEXnetPacket::LCD_UPDATE_RESPONSE);
             break;
         case 0x3B:
-            // packet = new VEXnetPacket(VEXnetPacket::JOY_STATUS_REQUEST);
+            packet = new VEXnetPacket(VEXnetPacket::JOY_STATUS_REQUEST);
             // return packet;
-            packet = new VEXnetPacket(VEXnetPacket::JOY_VERSION_REQUEST_RESPONSE);
+            // packet = new VEXnetPacket(VEXnetPacket::JOY_VERSION_REQUEST_RESPONSE);
             break;
         case 0x39:
             packet = new VEXnetPacket(VEXnetPacket::JOY_STATUS_REQUEST_RESPONSE);
@@ -117,26 +117,37 @@ VEXnetPacket *VEXnetDriver::ReceiveVexProtocolPacket() {
         default:
             packet = new VEXnetPacket();
             packet->type = *chr;
-            if (readChar(chr)) { // If another character was able to be read
-                packet->size = *chr - 1;
-                packet->data = new unsigned char[packet->size];
-                for (int i = 0; i < packet->size; i++) {
-                    readChar(chr); // Payload byte
-                    packet->data[i] = *chr;
-                    Checksum += *chr;
-                }
-                if (Checksum == 0) // If checksum is correct
-                    return packet;
-                else
-                    return nullptr;
-            return packet;
-    }
+            // if (readChar(chr, 10)) { // If another character was able to be read
+            //     packet->size = *chr - 1;
+            //     packet->data = new unsigned char[packet->size];
+            //     for (int i = 0; i < packet->size; i++) {
+            //         readChar(chr); // Payload byte
+            //         packet->data[i] = *chr;
+            //         Checksum += *chr;
+            //     }
+            //     if (Checksum == 0) // If checksum is correct
+            //         return packet;
+            //     else
+            //         return nullptr;
+            // }
+            // return packet;
     };
 
-    readChar(chr); // Packet size
-    if (*chr != packet->size) {
-        std::cout<<"Error: packet size is not correct"<<std::endl;
-        return nullptr;
+    // Packet size
+    if (!peakChar(chr) && !packet->size) { // If no more data available and data size is zero
+        return packet;
+    } else {
+        if (!packet->size) { // If packet size is zero
+            readChar(chr);
+            packet->size = *chr - 1;
+            packet->data = new unsigned char[packet->size];
+        }
+        // If packet size does not match expected size
+        if ((*chr != packet->size+1 && packet->includeChecksum) || *chr != packet->size) {
+            std::cout<<"Error: packet size is not correct"<<std::endl;
+            delete packet;
+            return nullptr;
+        }
     }
 
     for (int i = 0; i < packet->size; i++) {
@@ -147,8 +158,10 @@ VEXnetPacket *VEXnetDriver::ReceiveVexProtocolPacket() {
 
     if (Checksum == 0 || !packet->includeChecksum) // If checksum is correct
         return packet;
-    else
+    else {
+        delete packet;
         return nullptr;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -213,6 +226,11 @@ bool VEXnetDriver::writeChar(const char Byte) {
 }
 
 bool VEXnetDriver::readChar(char *pByte, const unsigned int timeOut_ms) {
+    if (this->bufferContents) {
+        this->bufferContents = false;
+        pByte = this->buffer;
+        return true;
+    }
     int code = serial.readChar(pByte, timeOut_ms);
     switch (code) {
         case 1:
@@ -232,6 +250,15 @@ bool VEXnetDriver::readChar(char *pByte, const unsigned int timeOut_ms) {
             std::cout<<"Error: an unknown error has occured"<<std::endl;
             return false;
     };
+}
+
+bool VEXnetDriver::peakChar(char *pByte, unsigned int timeOut_ms) {
+    bool status = true;
+    if (!this->bufferContents)
+        status = readChar(this->buffer, 20);
+    this->bufferContents = true;
+    pByte = this->buffer;
+    return status;
 }
 
 bool VEXnetDriver::writeString(const char *String) {

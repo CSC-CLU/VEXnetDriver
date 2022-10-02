@@ -32,11 +32,14 @@ private:
     serialib serial;
     const char *serial_port = nullptr;
     bool showSuccess = false;
+    char *buffer;
+    bool bufferContents = false;
 private:
     bool openDevice(const char *device, const unsigned int bauds, SerialDataBits dataBits = SERIAL_DATABITS_8, 
                     SerialParity parity = SERIAL_PARITY_NONE, SerialStopBits stopBits = SERIAL_STOPBITS_1);
     bool writeChar(const char Byte);
     bool readChar(char *pByte,const unsigned int timeOut_ms = 0);
+    bool peakChar(char *pByte, unsigned int timeOut_ms = 0);
     bool writeString(const char *String);
     bool readString(char *receivedString, char finalChar, unsigned int maxNbBytes, 
                     const unsigned int timeOut_ms = 0);
