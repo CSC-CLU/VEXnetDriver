@@ -2,7 +2,7 @@
  * @file main.cpp
  * @author Eric Heinke (sudo-Eric)
  * @version 0.0
- * @date September 30 2022
+ * @date October 3 2022
  * @brief Code for testing communications with the VEXnet using the VEXnetDriver
  */
 
@@ -11,7 +11,7 @@
 
 #include <iostream>
 // #include <bitset>
-// #include <string>
+#include <string>
 // #include <sstream>
 
 // Serial library
@@ -52,75 +52,80 @@ int main(int argc, char *argv[])
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Serial Communication
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // VEXnetDriver vexDriver = VEXnetDriver(SERIAL_PORT, VEXnetDriver::VEXnet_Joystick_Partner_Port, false);
+    VEXnetDriver vexDriver = VEXnetDriver(SERIAL_PORT, VEXnetDriver::VEXnet_Joystick_Partner_Port, false);
+    if (!vexDriver.isDeviceOpen()) {return -1;}
 
     // Connection to serial port
-    char statusCode = serial.openDevice(SERIAL_PORT, 115200, SERIAL_DATABITS_8, SERIAL_PARITY_NONE, SERIAL_STOPBITS_1);
+    // char statusCode = serial.openDevice(SERIAL_PORT, 115200, SERIAL_DATABITS_8, SERIAL_PARITY_NONE, SERIAL_STOPBITS_1);
 
     // If connection fails, display error message and exit. Otherwise, display a success message
-    if (statusCode < 2) return 1;
+    // if (statusCode < 2) return 1;
 
-    statusCode = serial.flushReceiver();
+    // statusCode = serial.flushReceiver();
 
-    unsigned char *PacketType;
-    unsigned char *PayloadSize;
-    unsigned char *DataBytes = new unsigned char[100];
+    // unsigned char *PacketType;
+    // unsigned char *PayloadSize;
+    // unsigned char *DataBytes = new unsigned char[100];
 
     for (int i = 0; i < 10; i++) {
-        bool packetRecieved = ReceiveVexProtocolPacket(PacketType, PayloadSize, DataBytes);
-        if (packetRecieved) {
-            cout << "Packet Type: " << std::hex << PacketType << endl;
-            cout << "Payload Size: " << std::hex << PayloadSize << endl;
-            cout << "Data Bytes: ";
-            unsigned char PayloadSizeChar = 0;//*PayloadSize
-            for (int j = 0; j < (int)PayloadSizeChar; j++) {
-                cout << std::hex << DataBytes[j] << ' ';
-            }
-            cout << endl;
-        }
+        // bool packetRecieved = ReceiveVexProtocolPacket(PacketType, PayloadSize, DataBytes);
+        // if (packetRecieved) {
+        //     cout << "Packet Type: " << std::hex << PacketType << endl;
+        //     cout << "Payload Size: " << std::hex << PayloadSize << endl;
+        //     cout << "Data Bytes: ";
+        //     unsigned char PayloadSizeChar = 0;//*PayloadSize
+        //     for (int j = 0; j < (int)PayloadSizeChar; j++) {
+        //         cout << std::hex << DataBytes[j] << ' ';
+        //     }
+        //     cout << endl;
+        // }
+
+        VEXnetPacket *packet = vexDriver.ReceiveVexProtocolPacket();
+        cout<<packet->toString()<<endl;
+        delete packet;
 
 
-        *PacketType = 0x39;
-        *PayloadSize = 0x09;
-        DataBytes[0] = 0x7F; // Joystick 1
-        DataBytes[1] = 0x7F; // Joystick 2
-        DataBytes[2] = 0x7F; // Joystick 3
-        DataBytes[3] = 0x7F; // Joystick 4
+        // *PacketType = 0x39;
+        // *PayloadSize = 0x09;
+        // DataBytes[0] = 0x7F; // Joystick 1
+        // DataBytes[1] = 0x7F; // Joystick 2
+        // DataBytes[2] = 0x7F; // Joystick 3
+        // DataBytes[3] = 0x7F; // Joystick 4
 
-        // Change to |= to specify that the button is pressed
-        DataBytes[4] = 0x00;
-        DataBytes[4] &= 0x01; // Button 56  | L2
-        DataBytes[4] &= 0x02; // Button 56  | L1
-        DataBytes[4] &= 0x04; // Button 56  | R2
-        DataBytes[4] &= 0x08; // Button 56  | R1
+        // // Change to |= to specify that the button is pressed
+        // DataBytes[4] = 0x00;
+        // DataBytes[4] &= 0x01; // Button 56  | L2
+        // DataBytes[4] &= 0x02; // Button 56  | L1
+        // DataBytes[4] &= 0x04; // Button 56  | R2
+        // DataBytes[4] &= 0x08; // Button 56  | R1
 
-        // Change to |= to specify that the button is pressed
-        DataBytes[5] = 0x00;
-        DataBytes[5] &= 0x01; // Button 78  | Down
-        DataBytes[5] &= 0x02; // Button 78  | Left
-        DataBytes[5] &= 0x04; // Button 78  | Up
-        DataBytes[5] &= 0x08; // Button 78  | Right
-        DataBytes[5] &= 0x10; // Button 78  | Cross
-        DataBytes[5] &= 0x20; // Button 78  | Square
-        DataBytes[5] &= 0x40; // Button 78  | Triangle
-        DataBytes[5] &= 0x80; // Button 78  | Circle
+        // // Change to |= to specify that the button is pressed
+        // DataBytes[5] = 0x00;
+        // DataBytes[5] &= 0x01; // Button 78  | Down
+        // DataBytes[5] &= 0x02; // Button 78  | Left
+        // DataBytes[5] &= 0x04; // Button 78  | Up
+        // DataBytes[5] &= 0x08; // Button 78  | Right
+        // DataBytes[5] &= 0x10; // Button 78  | Cross
+        // DataBytes[5] &= 0x20; // Button 78  | Square
+        // DataBytes[5] &= 0x40; // Button 78  | Triangle
+        // DataBytes[5] &= 0x80; // Button 78  | Circle
 
-        DataBytes[6] = 0x7F; // Accel Y
-        DataBytes[7] = 0x7F; // Accel X
-        DataBytes[8] = 0x7F; // Accel Z
+        // DataBytes[6] = 0x7F; // Accel Y
+        // DataBytes[7] = 0x7F; // Accel X
+        // DataBytes[8] = 0x7F; // Accel Z
 
-        SendVexProtocolPacket(*PacketType, *PayloadSize, DataBytes);
+        // SendVexProtocolPacket(*PacketType, *PayloadSize, DataBytes);
 
-        // VEXnetPacket *packet = VEXnetPacket::compileControllerPacket(
-        //     0x7F, 0x7F, 0x7F, 0x7F, false, false, false, false, false, 
-        //     false, false, false, false, false, false, false, 0x7f, 0x7f, 0x7f);
-        // vexDriver.SendVexProtocolPacket(*packet);
-        // delete packet;
+        packet = VEXnetPacket::compileControllerPacket(
+            0x7F, 0x7F, 0x7F, 0x7F, false, false, false, false, false, 
+            false, false, false, false, false, false, false, 0x7f, 0x7f, 0x7f);
+        vexDriver.SendVexProtocolPacket(*packet);
+        delete packet;
     }
 
-    delete PacketType;
-    delete PayloadSize;
-    delete[] DataBytes;
+    // delete PacketType;
+    // delete PayloadSize;
+    // delete[] DataBytes;
 
     // Close the serial device
     serial.closeDevice();

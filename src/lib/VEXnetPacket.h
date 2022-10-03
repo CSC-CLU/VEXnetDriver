@@ -2,12 +2,14 @@
  * @file VEXnetPacket.h
  * @author Eric Heinke (sudo-Eric), Zrp200
  * @version 0.5a
- * @date September 30 2022
+ * @date October 3 2022
  * @brief 
  */
 
 #ifndef VEXNETPACKET_H
 #define VEXNETPACKET_H
+
+#include <string>
 
 struct VEXnetPacket {
     enum PacketType {
@@ -35,6 +37,8 @@ struct VEXnetPacket {
 
     ~VEXnetPacket() { delete[] this->data; };
 
+    std::string toString();
+
     static VEXnetPacket* compileControllerPacket(unsigned char joystick_1,
                                  unsigned char joystick_2,
                                  unsigned char joystick_3,
@@ -59,7 +63,6 @@ struct VEXnetPacket {
         data[8] = accel_Z;
         return new VEXnetPacket(JOY_STATUS_REQUEST_RESPONSE, data);
     };
-
 };
 
 #endif //VEXNETPACKET_H

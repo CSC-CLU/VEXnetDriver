@@ -2,7 +2,7 @@
  * @file VEXnetDriver.cpp
  * @author Eric Heinke (sudo-Eric), Zrp200
  * @version 0.5a
- * @date September 30 2022
+ * @date October 3 2022
  * @brief Code for communicating using the VEXnet
  */
 
