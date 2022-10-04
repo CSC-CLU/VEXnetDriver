@@ -27,180 +27,48 @@
 #if defined (_WIN32) || defined(_WIN64)
     //for serial ports above "COM9", we must use this extended syntax of "\\.\COMx".
     //also works for COM0 to COM9.
-    #define SERIAL_PORT "\\\\.\\COM4"
+    #define SERIAL_PORT "\\\\.\\COM5"
 #endif
 #if defined (__linux__) || defined(__APPLE__)
     #define SERIAL_PORT "/dev/ttyACM0"
 #endif
 
+#include <thread>
+#include <chrono>
 using namespace std;
-
-// Define function headder information
-void writeChar(char);
-void SendVexProtocolPacket(unsigned char, unsigned char, unsigned char*);
-char readChar();
-bool ReceiveVexProtocolPacket(unsigned char*, unsigned char*, unsigned char*);
-
-
-
 
 // Serial object
 serialib serial;
 
+void delay(int delay) {
+    Sleep(delay);
+    // this_thread::sleep_for(chrono::milliseconds(delay));
+
+}
+
 int main(int argc, char *argv[])
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Serial Communication
+    // Serial Communication with VEX controller
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     VEXnetDriver vexDriver = VEXnetDriver(SERIAL_PORT, VEXnetDriver::VEXnet_Joystick_Partner_Port, false);
     if (!vexDriver.isDeviceOpen()) {return -1;}
 
-    // Connection to serial port
-    // char statusCode = serial.openDevice(SERIAL_PORT, 115200, SERIAL_DATABITS_8, SERIAL_PARITY_NONE, SERIAL_STOPBITS_1);
-
-    // If connection fails, display error message and exit. Otherwise, display a success message
-    // if (statusCode < 2) return 1;
-
-    // statusCode = serial.flushReceiver();
-
-    // unsigned char *PacketType;
-    // unsigned char *PayloadSize;
-    // unsigned char *DataBytes = new unsigned char[100];
-
-    for (int i = 0; i < 10; i++) {
-        // bool packetRecieved = ReceiveVexProtocolPacket(PacketType, PayloadSize, DataBytes);
-        // if (packetRecieved) {
-        //     cout << "Packet Type: " << std::hex << PacketType << endl;
-        //     cout << "Payload Size: " << std::hex << PayloadSize << endl;
-        //     cout << "Data Bytes: ";
-        //     unsigned char PayloadSizeChar = 0;//*PayloadSize
-        //     for (int j = 0; j < (int)PayloadSizeChar; j++) {
-        //         cout << std::hex << DataBytes[j] << ' ';
-        //     }
-        //     cout << endl;
-        // }
-
+    while (true) {
         VEXnetPacket *packet = vexDriver.ReceiveVexProtocolPacket();
-        cout<<packet->toString()<<endl;
+        if (packet)
+            cout<<packet->toString()<<endl;
         delete packet;
-
-
-        // *PacketType = 0x39;
-        // *PayloadSize = 0x09;
-        // DataBytes[0] = 0x7F; // Joystick 1
-        // DataBytes[1] = 0x7F; // Joystick 2
-        // DataBytes[2] = 0x7F; // Joystick 3
-        // DataBytes[3] = 0x7F; // Joystick 4
-
-        // // Change to |= to specify that the button is pressed
-        // DataBytes[4] = 0x00;
-        // DataBytes[4] &= 0x01; // Button 56  | L2
-        // DataBytes[4] &= 0x02; // Button 56  | L1
-        // DataBytes[4] &= 0x04; // Button 56  | R2
-        // DataBytes[4] &= 0x08; // Button 56  | R1
-
-        // // Change to |= to specify that the button is pressed
-        // DataBytes[5] = 0x00;
-        // DataBytes[5] &= 0x01; // Button 78  | Down
-        // DataBytes[5] &= 0x02; // Button 78  | Left
-        // DataBytes[5] &= 0x04; // Button 78  | Up
-        // DataBytes[5] &= 0x08; // Button 78  | Right
-        // DataBytes[5] &= 0x10; // Button 78  | Cross
-        // DataBytes[5] &= 0x20; // Button 78  | Square
-        // DataBytes[5] &= 0x40; // Button 78  | Triangle
-        // DataBytes[5] &= 0x80; // Button 78  | Circle
-
-        // DataBytes[6] = 0x7F; // Accel Y
-        // DataBytes[7] = 0x7F; // Accel X
-        // DataBytes[8] = 0x7F; // Accel Z
-
-        // SendVexProtocolPacket(*PacketType, *PayloadSize, DataBytes);
 
         packet = VEXnetPacket::compileControllerPacket(
-            0x7F, 0x7F, 0x7F, 0x7F, false, false, false, false, false, 
+            0x7F, 0x7F, 0x7F, 0x7F, false, false, false, true, false, 
             false, false, false, false, false, false, false, 0x7f, 0x7f, 0x7f);
+        cout<<"Sending controller packet"<<endl;
         vexDriver.SendVexProtocolPacket(*packet);
         delete packet;
+
+        delay(1000);
     }
-
-    // delete PacketType;
-    // delete PayloadSize;
-    // delete[] DataBytes;
-
-    // Close the serial device
-    serial.closeDevice();
 
     return 0 ;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Code to decode and encode (read and write) VEX packet data
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void writeChar(char c) {
-    serial.writeChar(c);
-}
-
-void SendVexProtocolPacket(unsigned char PacketType,
-                           unsigned char PayloadSize,
-                           unsigned char *DataBytes)
-{
-    if (!serial.isDeviceOpen()) return; // If the serial device is not open, return.
-
-    writeChar(0xaa); // Sync 1
-    writeChar(0x55); // Sync 2
-
-    writeChar(PacketType);
-
-    if (PayloadSize) {
-        unsigned char Checksum=0;
-
-        writeChar(PayloadSize+1);  // +1 for Checksum
-
-        while(PayloadSize--) {
-            unsigned char Byte = *DataBytes++;
-            writeChar(Byte);
-            Checksum -= Byte;
-        }
-
-        writeChar(Checksum);
-    }
-}
-
-char readChar() {
-    char* tmpChar;
-    serial.readChar(tmpChar);
-    return *tmpChar;
-}
-
-bool ReceiveVexProtocolPacket(unsigned char *PacketType,
-                              unsigned char *PayloadSize,
-                              unsigned char *DataBytes)
-{
-    if (!serial.isDeviceOpen()) return false; // If the serial device is not open, return.
-    if (serial.available()) return false; // If there is nothing in the serial buffer, return.
-
-    unsigned char Checksum=0;
-
-    if (readChar() != 0xaa)
-        return false; // Expect Sync 1
-
-    if (readChar() != 0x55)
-        return false; // Expect Sync 2
-
-    *PacketType = readChar();
-
-    if (PayloadSize) { // We are expecting data
-        unsigned char Bytes = readChar();
-
-        *PayloadSize = Bytes-1;
-
-        while (Bytes--) {
-            unsigned char Byte = readChar();
-            *DataBytes++ = Byte;
-            Checksum += Byte;
-        }
-    }
-
-    return (Checksum==0);
 }

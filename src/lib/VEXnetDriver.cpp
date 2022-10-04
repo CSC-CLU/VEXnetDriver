@@ -175,6 +175,7 @@ bool VEXnetDriver::openDevice(const char *Device, const unsigned int Bauds,
         case 1:
             if (showSuccess > 1)
                 printf("Successful connection to %s\n",this->serial_port);
+            flushReceiver();
             return true;
         case -1:
             printf("Error: device not found %s\n",this->serial_port);
