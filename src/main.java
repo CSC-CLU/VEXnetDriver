@@ -1,3 +1,11 @@
+/**
+ * @file main.java
+ * @author Eric Heinke (sudo-Eric), Zrp200
+ * @version 0.5a
+ * @date October 5, 2022
+ * @brief Code for communicating using the VEXnet
+ */
+
 // https://github.com/Fazecast/jSerialComm
 import com.fazecast.jSerialComm.SerialPort;
 

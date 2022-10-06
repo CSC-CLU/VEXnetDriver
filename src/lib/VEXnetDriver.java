@@ -1,9 +1,17 @@
+/**
+ * @file VEXnetDriver.java
+ * @author Eric Heinke (sudo-Eric), Zrp200
+ * @version 0.5a
+ * @date October 5, 2022
+ * @brief Code for communicating using the VEXnet
+ */
+
 package lib;
 
 // https://github.com/Fazecast/jSerialComm
 import com.fazecast.jSerialComm.SerialPort;
 
-import lib.VEXnetPacket;
+import static lib.VEXnetPacket.PacketType.*;
 
 import static com.fazecast.jSerialComm.SerialPort.NO_PARITY;
 import static com.fazecast.jSerialComm.SerialPort.ONE_STOP_BIT;
@@ -64,7 +72,7 @@ public class VEXnetDriver {
     //                                            SendVexProtocolPacket                                           //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public void SendVexProtocolPacket(VEXnetPacket packet) { // Finish later
+    public void SendVexProtocolPacket(VEXnetPacket packet) {
         if (!isDeviceOpen()) { // If the serial device is not open, return.
             System.out.println("Error: Serial device is not open");
             return;
@@ -95,7 +103,63 @@ public class VEXnetDriver {
     //                                          ReceiveVexProtocolPacket                                          //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public VEXnetPacket ReceiveVexProtocolPacket() { // Finish later
+    public VEXnetPacket ReceiveVexProtocolPacket() {
+        if (!isDeviceOpen()) { // If the serial device is not open, return.
+            System.out.println("Error: Serial device is not open");
+            return null;
+        }
+
+        if (bytesAvailable() == 0) return null; // If there is nothing in the serial buffer, return.
+
+        char Checksum = 0;
+
+        if (readChar() != (char)0xaa) // Sync 1
+            return null; // Expect Sync 1
+
+        if (readChar() != 0x55) // Sync 2
+            return null; // Expect Sync 2
+
+        char chr = readChar(); // Packet type
+        VEXnetPacket packet = null;
+        switch (chr) {
+            case 0x1E -> packet = new VEXnetPacket(LCD_UPDATE);
+            case 0x16 -> packet = new VEXnetPacket(LCD_UPDATE_RESPONSE);
+            case 0x3B -> packet = new VEXnetPacket(JOY_STATUS_REQUEST);
+            case 0x39 -> packet = new VEXnetPacket(JOY_STATUS_REQUEST_RESPONSE);
+            case 0x3A -> {
+                packet = new VEXnetPacket(JOY_VERSION_REQUEST);
+                return packet;
+            }
+            default -> {
+                packet = new VEXnetPacket();
+                packet.type = chr;
+            }
+        }
+
+        // Packet size
+        if (peekChar() == 0 && packet.size == 0) { // If no more data available and data size is zero
+            return packet;
+        } else {
+            if (packet.size == 0) { // If packet size is zero
+                chr = readChar();
+                packet.size = (char)(chr - 1);
+                packet.data = new char[packet.size];
+            }
+            // If packet size does not match expected size
+            if ((chr != packet.size+1 && packet.includeChecksum) || chr != packet.size) {
+                System.out.println("Error: packet size is not correct");
+                return null;
+            }
+        }
+
+        for (int i = 0; i < packet.size; i++) {
+            chr = readChar(); // Payload byte
+            packet.data[i] = chr;
+            Checksum += chr;
+        }
+
+        if (Checksum == 0 || !packet.includeChecksum) // If checksum is correct
+            return packet;
         return null;
     }
 
@@ -152,7 +216,7 @@ public class VEXnetDriver {
         return 0;
     }
 
-    char peakChar() {
+    char peekChar() {
         if (this.bufferPosition != this.bufferSize) {
             return this.buffer[this.bufferPosition];
         }
@@ -171,5 +235,12 @@ public class VEXnetDriver {
             System.out.println("Error: receiver not flushed successfully");
         }
         return status;
+    }
+
+    int bytesAvailable() {
+        if (this.bufferPosition != this.bufferSize)
+            return this.bufferSize - this.bufferPosition + this.serial.bytesAvailable();
+        else
+            return this.serial.bytesAvailable();
     }
 }
