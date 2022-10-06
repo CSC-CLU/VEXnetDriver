@@ -9,11 +9,6 @@
 // https://github.com/Fazecast/jSerialComm
 import com.fazecast.jSerialComm.SerialPort;
 
-import lib.VEXnetDriver;
-import lib.VEXnetPacket;
-
-import static lib.VEXnetDriver.DeviceType.VEXnet_Joystick_Partner_Port;
-
 public class main {
     public static void main(String[] args) {
 
@@ -44,7 +39,7 @@ public class main {
 //        System.out.println("Using: " + comPort.getSystemPortName());
         System.out.println("Using: " + comPort.getDescriptivePortName());
 
-        VEXnetDriver driver = new VEXnetDriver(comPort, VEXnet_Joystick_Partner_Port);
+        VEXnetDriver driver = new VEXnetDriver(comPort, VEXnetDriver.DeviceType.VEXnet_Joystick_Partner_Port);
 
         for(int i = 0; i < 100; i++)
             driver.SendVexProtocolPacket(packet);
