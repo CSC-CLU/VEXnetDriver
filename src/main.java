@@ -26,12 +26,12 @@ public class main {
         }
 
         VEXnetPacket packet = VEXnetPacket.compileControllerPacket(
-                (char)127, (char)127, (char)127, (char)127,
+                (byte)127, (byte)127, (byte)127, (byte)127,
                 false, false,
                 true, false,
                 false, false, false, false,
                 false, false, false, false,
-                (char)127, (char)127, (char)127);
+                (byte)127, (byte)127, (byte)127);
 //        System.out.println(packet);
 
         SerialPort comPort = ports[0];
