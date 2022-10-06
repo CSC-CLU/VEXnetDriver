@@ -1,8 +1,8 @@
 /**
+ * Code for communicating using the VEXnet
  * @author Eric Heinke (sudo-Eric), Zrp200
  * @version 1.0
  * @date October 5, 2022
- * @brief Code for communicating using the VEXnet
  */
 
 public class VEXnetPacket {
@@ -29,7 +29,7 @@ public class VEXnetPacket {
          **/
         final byte type;
 
-        /** the amount of bytes are sent with this packet type **/
+        /** the amount of bytes is sent with this packet type **/
 
         final byte size;
         /**
