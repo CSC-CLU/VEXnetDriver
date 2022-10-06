@@ -25,10 +25,17 @@ public class main {
 //            System.out.println(port.getDescriptivePortName());
         }
 
-        VEXnetPacket packet = VEXnetPacket.compileControllerPacket(
+        VEXnetPacket packet1 = VEXnetPacket.compileControllerPacket(
                 (byte)127, (byte)127, (byte)127, (byte)127,
                 false, false,
                 true, false,
+                false, false, false, false,
+                false, false, false, false,
+                (byte)127, (byte)127, (byte)127);
+        VEXnetPacket packet2 = VEXnetPacket.compileControllerPacket(
+                (byte)127, (byte)127, (byte)127, (byte)127,
+                false, false,
+                false, true,
                 false, false, false, false,
                 false, false, false, false,
                 (byte)127, (byte)127, (byte)127);
@@ -41,12 +48,25 @@ public class main {
 
         VEXnetDriver driver = new VEXnetDriver(comPort, VEXnetDriver.DeviceType.VEXnet_Joystick_Partner_Port);
 
-        for(int i = 0; i < 100; i++) {
-//            driver.SendVexProtocolPacket(packet);
-            VEXnetPacket packet2 = driver.ReceiveVexProtocolPacket();
-            if (packet2 != null)
-                System.out.println(packet2);
+        while (true) {
             Thread.sleep(100);
+            for (int i = 0; i < 200; i++) {
+                driver.SendVexProtocolPacket(packet1);
+                Thread.sleep(1);
+            }
+            VEXnetPacket packe3 = driver.ReceiveVexProtocolPacket();
+            if (packe3 != null)
+                System.out.println(packe3);
+
+            Thread.sleep(100);
+            for (int i = 0; i < 80; i++) {
+                driver.SendVexProtocolPacket(packet2);
+                Thread.sleep(1);
+            }
+            packe3 = driver.ReceiveVexProtocolPacket();
+            if (packe3 != null)
+                System.out.println(packe3);
+
         }
     }
 }
