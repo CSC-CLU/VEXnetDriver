@@ -2,9 +2,8 @@
  * Code for communicating using the VEXnet
  * @author Eric Heinke (sudo-Eric), Zrp200
  * @version 1.0
- * @date October 5, 2022
+ * @date October 6, 2022
  */
-
 public class VEXnetPacket {
 
     /** Known packet types
@@ -30,10 +29,10 @@ public class VEXnetPacket {
         final byte type;
 
         /** the amount of bytes is sent with this packet type **/
-
         final byte size;
+
         /**
-         * whether a checksum is expected to be provided at the end of a transmission.
+         * whether a checksum is expected to be provided at the end of some transmissions.
          *
          * @see VEXnetPacket#includeChecksum
          **/

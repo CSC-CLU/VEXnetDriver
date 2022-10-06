@@ -1,9 +1,8 @@
 /**
- * @file main.java
+ * Code for communicating using the VEXnet
  * @author Eric Heinke (sudo-Eric), Zrp200
  * @version 1.0
- * @date October 5, 2022
- * @brief Code for communicating using the VEXnet
+ * @date October 6, 2022
  */
 
 // https://github.com/Fazecast/jSerialComm
@@ -57,16 +56,16 @@ public class main {
         }
 
         VEXnetPacket packet1 = VEXnetPacket.compileControllerPacket(
-                (byte)127, (byte)127, (byte)127, (byte)127,
+                (byte)(127), (byte)(127), (byte)(127), (byte)(127),
                 false, false,
-                true, false,
+                false, false,
                 false, false, false, false,
                 false, false, false, false,
                 (byte)127, (byte)127, (byte)127);
         VEXnetPacket packet2 = VEXnetPacket.compileControllerPacket(
                 (byte)127, (byte)127, (byte)127, (byte)127,
                 false, false,
-                false, true,
+                false, false,
                 false, false, false, false,
                 false, false, false, false,
                 (byte)127, (byte)127, (byte)127);
@@ -74,25 +73,25 @@ public class main {
 
         VEXnetDriver driver = new VEXnetDriver(comPort, VEXnetDriver.DeviceType.VEXnet_Joystick_Partner_Port);
 
-//        while (true) {
-//            Thread.sleep(100);
-//            for (int i = 0; i < 200; i++) {
-//                driver.SendVexProtocolPacket(packet1);
-//                Thread.sleep(1);
-//            }
-//            VEXnetPacket packe3 = driver.ReceiveVexProtocolPacket();
-//            if (packe3 != null)
-//                System.out.println(packe3);
-//
-//            Thread.sleep(100);
-//            for (int i = 0; i < 80; i++) {
-//                driver.SendVexProtocolPacket(packet2);
-//                Thread.sleep(1);
-//            }
-//            packe3 = driver.ReceiveVexProtocolPacket();
-//            if (packe3 != null)
-//                System.out.println(packe3);
-//
-//        }
+        while (true) {
+            Thread.sleep(100);
+            for (int i = 0; i < 200; i++) {
+                driver.SendVexProtocolPacket(packet1);
+                Thread.sleep(1);
+            }
+            VEXnetPacket packe3 = driver.ReceiveVexProtocolPacket();
+            if (packe3 != null)
+                System.out.println(packe3);
+
+            Thread.sleep(100);
+            for (int i = 0; i < 80; i++) {
+                driver.SendVexProtocolPacket(packet2);
+                Thread.sleep(1);
+            }
+            packe3 = driver.ReceiveVexProtocolPacket();
+            if (packe3 != null)
+                System.out.println(packe3);
+
+        }
     }
 }

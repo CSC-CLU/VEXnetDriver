@@ -1,19 +1,21 @@
-/**
- * @author Eric Heinke (sudo-Eric), Zrp200
- * @version 1.0
- * @date October 5, 2022
- * @brief Code for communicating using the VEXnet
- */
-
 // https://github.com/Fazecast/jSerialComm
-
 import com.fazecast.jSerialComm.SerialPort;
 
 import static com.fazecast.jSerialComm.SerialPort.NO_PARITY;
 import static com.fazecast.jSerialComm.SerialPort.ONE_STOP_BIT;
 import static java.util.Objects.requireNonNull;
 
+/**
+ * Code for communicating using the VEXnet
+ * @author Eric Heinke (sudo-Eric), Zrp200
+ * @version 1.0
+ * @date October 6, 2022
+ */
 public class VEXnetDriver {
+    /** Known device types
+     * @see VEXnetDriver#VEXnetDriver(SerialPort, DeviceType, boolean)
+     * @see VEXnetDriver#VEXnetDriver(SerialPort, int, int, int, int, boolean)
+     */
     public enum DeviceType {
         LCD(19200),
         VEXnet_Joystick_Partner_Port(115200);
@@ -24,16 +26,51 @@ public class VEXnetDriver {
         }
     }
 
+    /**
+     * Serial port device
+     */
     SerialPort serial;
+
+    /**
+     * String name of the serial port
+     */
     String serial_port = null;
+
+    /**
+     * Determines whether success messages should be shown on serial library calls
+     */
     boolean showSuccess = false;
+
+    /**
+     * Buffer to be used when reading serial data
+     */
     byte[] buffer = new byte[10];
+
+    /**
+     * Size of the contents of the buffer (not necessarily the same as buffer.length)
+     */
     int bufferSize = 0;
+
+    /**
+     * Position of the next byte in the buffer to be read
+     */
     int bufferPosition = 0;
 
-    public VEXnetDriver() {
+    /**
+     * Create an instance of the driver using device type
+     * @param device Serial port device
+     * @param deviceType They type of the device
+     */
+    public VEXnetDriver(SerialPort device, DeviceType deviceType) {
+        this(device, deviceType, false);
     }
 
+    /**
+     * Create an instance of the driver using device type
+     * @param device Serial port device
+     * @param deviceType They type of the device
+     * @param showSuccess Show successful serial communication messages
+     */
     public VEXnetDriver(SerialPort device, DeviceType deviceType, boolean showSuccess) {
         serial = device;
         this.showSuccess = showSuccess;
@@ -41,15 +78,28 @@ public class VEXnetDriver {
         requireNonNull(deviceType);
         openDevice(serial, deviceType.bauds, 8, NO_PARITY, ONE_STOP_BIT);
     }
-    public VEXnetDriver(SerialPort device, DeviceType deviceType) {
-        this(device, deviceType, false);
-    }
 
-
+    /**
+     * Create an instance of the driver using exact specifications
+     * @param device Serial port device
+     * @param bauds Baud rate of serial port
+     * @param dataBits Data bits
+     * @param parity Parity type
+     * @param stopBits Stop bits
+     */
     VEXnetDriver(SerialPort device, int bauds, int dataBits, int parity, int stopBits) {
         this(device, bauds, dataBits, parity, stopBits, false);
     }
 
+    /**
+     * Create an instance of the driver using exact specifications
+     * @param device Serial port device
+     * @param bauds Baud rate of serial port
+     * @param dataBits Data bits
+     * @param parity Parity type
+     * @param stopBits Stop bits
+     * @param showSuccess Show successful serial communication messages
+     */
     VEXnetDriver(SerialPort device, int bauds, int dataBits, int parity, int stopBits, boolean showSuccess) {
         this.serial = device;
         this.showSuccess = showSuccess;
@@ -57,10 +107,17 @@ public class VEXnetDriver {
         openDevice(this.serial, bauds, dataBits, parity, stopBits);
     }
 
+    /**
+     * Check if the serial device is open
+     * @return Is serial port open
+     */
     boolean isDeviceOpen() {
         return serial.isOpen();
     }
 
+    /**
+     * Close the serial device when the driver object is destroyed
+     */
     @Override
     protected void finalize() {
         serial.closePort();
@@ -70,6 +127,10 @@ public class VEXnetDriver {
     //                                            SendVexProtocolPacket                                           //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Send a NEXnet packet to the serial device
+     * @param packet VEXnet packet
+     */
     public void SendVexProtocolPacket(VEXnetPacket packet) {
         if (!isDeviceOpen()) { // If the serial device is not open, return.
             System.out.println("Error: Serial device is not open");
@@ -103,6 +164,10 @@ public class VEXnetDriver {
     //                                          ReceiveVexProtocolPacket                                          //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Receive a VEXnet packet from serial device if one is present
+     * @return VEXnet packet if available, otherwise null
+     */
     public VEXnetPacket ReceiveVexProtocolPacket() {
         if (!isDeviceOpen()) { // If the serial device is not open, return.
             System.out.println("Error: Serial device is not open");
@@ -113,15 +178,12 @@ public class VEXnetDriver {
 
         char Checksum = 0;
 
-//        System.out.printf("0x%02X%n", peekByte());
         if (readByte() != (byte)0xAA) // Sync 1
             return null; // Expect Sync 1
 
-//        System.out.printf("0x%02X%n", peekByte());
         if (readByte() != 0x55) // Sync 2
             return null; // Expect Sync 2
 
-//        System.out.printf("0x%02X%n", peekByte());
         byte chr = readByte(); // Packet type
         VEXnetPacket.PacketType type = VEXnetPacket.PacketType.get(chr);
         VEXnetPacket packet =
@@ -129,13 +191,11 @@ public class VEXnetDriver {
                         new VEXnetPacket(chr, (byte) 0);
 
         // Packet size
-//        System.out.printf("0x%02X%n", peekByte());
         if ((peekByte() == (byte)0xAA || peekByte() == (byte)0x01) && packet.size == 0) {
             // If no more data available and the packet is still empty just return
             return packet;
         } else {
             if (packet.size == 0) { // If packet size is zero
-//                System.out.printf("0x%02X%n", peekByte());
                 chr = readByte();
                 packet.size = packet.includeChecksum ? (byte)(chr - 1) : chr;
                 packet.data = new byte[packet.size];
@@ -161,6 +221,15 @@ public class VEXnetDriver {
     //                   Supporting functions for the serial library to interpret response codes                  //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Open a serial port device
+     * @param Device Serial port
+     * @param Bauds Baud rate
+     * @param Databits Data bits
+     * @param Parity Parity mode
+     * @param Stopbits Stop bits
+     * @return Success status
+     */
     private boolean openDevice(SerialPort Device, int Bauds, int Databits, int Parity, int Stopbits) {
         serial.setComPortParameters(Bauds, Databits, Stopbits, Parity);
 
@@ -175,6 +244,11 @@ public class VEXnetDriver {
         return status;
     }
 
+    /**
+     * Write a byte to the serial device
+     * @param bytes Byte to be sent
+     * @return Success status
+     */
     boolean writeBytes(byte... bytes) {
         int code = serial.writeBytes(bytes, bytes.length);
         if(code != -1) {
@@ -185,6 +259,11 @@ public class VEXnetDriver {
         return false;
     }
 
+    /**
+     * Return the next byte from the buffer
+     * If the buffer is empty, refill it
+     * @return Byte read
+     */
     byte readByte() {
         if (bufferPosition != bufferSize) {
             return buffer[bufferPosition++];
@@ -202,6 +281,10 @@ public class VEXnetDriver {
         return 0;
     }
 
+    /**
+     * Get the next byte in the buffer without moving on to the next byte
+     * @return Byte read
+     */
     byte peekByte() {
         if (bufferPosition != bufferSize) {
             return buffer[bufferPosition];
@@ -211,8 +294,15 @@ public class VEXnetDriver {
         return Byte;
     }
 
+    /**
+     * Clear all contents of the sending and receiving buffers
+     * @return Success status
+     */
     boolean flushReceiver() {
         boolean status = serial.flushIOBuffers();
+        this.buffer = new byte[1];
+        this.bufferSize = this.buffer.length;
+        this.bufferPosition = this.bufferSize;
         if (status) {
             if (showSuccess) {
                 System.out.println("Receiver successfully flushed");
@@ -223,6 +313,10 @@ public class VEXnetDriver {
         return status;
     }
 
+    /**
+     * Check the number of bytes available in the serial buffers
+     * @return Bytes available in buffers
+     */
     int bytesAvailable() {
         if (bufferPosition != bufferSize)
             return bufferSize - bufferPosition + serial.bytesAvailable();
