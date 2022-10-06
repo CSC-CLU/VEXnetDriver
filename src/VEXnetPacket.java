@@ -6,8 +6,13 @@
  */
 
 public class VEXnetPacket {
+
+    /** Known packet types
+     *
+     * @see VEXnetPacket#VEXnetPacket(PacketType, byte... data)
+     * @see VEXnetPacket#VEXnetPacket(byte type, byte size, boolean checksum, byte... data)
+     * **/
     public enum PacketType {
-        // type, size, includeChecksum
         LCD_UPDATE(0x1E, 17),
         LCD_UPDATE_RESPONSE(0x16, 1),
 
@@ -17,8 +22,23 @@ public class VEXnetPacket {
         JOY_VERSION_REQUEST(0x3A, 0),
         JOY_VERSION_REQUEST_RESPONSE(0x3B, 2, false);
 
-        final byte type, size;
+        /** the byte denoting the packet type.
+         *
+         * @see #get(byte type)
+         * @see VEXnetPacket#type
+         **/
+        final byte type;
+
+        /** the amount of bytes are sent with this packet type **/
+
+        final byte size;
+        /**
+         * whether a checksum is expected to be provided at the end of a transmission.
+         *
+         * @see VEXnetPacket#includeChecksum
+         **/
         final boolean checksum;
+
         PacketType(int type, int size, boolean checksum) {
             this.type = (byte)type;
             this.size = (byte)size;
@@ -27,11 +47,12 @@ public class VEXnetPacket {
 
         PacketType(int type, int size) { this(type, size, true); }
 
-        // get packet type based on its char attribute
+        /** get packet type based on its {@link #type} **/
         public static PacketType get(byte type) {
             return get(type, (byte)0);
         }
 
+        /** {@link #get(byte type) }, but excludes any types that cannot contain {@code size} **/
         static PacketType get(byte type, byte size) {
             for(PacketType t : values()) {
                 if(t.type == type && t.size >= size) return t;
@@ -39,26 +60,42 @@ public class VEXnetPacket {
             return null;
         }
 
-        // get the type corresponding to the packet
+        /** get the type corresponding to the packet **/
         static PacketType get(VEXnetPacket packet) {
             return get(packet.type, packet.size);
         }
     }
 
-    byte type, size;
+    /**
+     * The byte denoting this packet's attributes. It is received right after the two sink bytes.
+     *
+     * @see PacketType#type **/
+    byte type;
+    /** the amount of bytes that are expected to be contained by this packet **/
+    byte size;
+    /** the contents of the packet **/
     byte[] data;
     boolean includeChecksum = true;
 
-    public VEXnetPacket() { }
-
+    /** Calls {@link #VEXnetPacket(byte type, byte size, boolean checksum, byte... data)} with information derived from {@code type} **/
     public VEXnetPacket(PacketType type, byte... data) {
         this(type.type, type.size, type.checksum, data);
     }
 
+    /** @see #VEXnetPacket(byte type, byte size, byte... data) **/
     VEXnetPacket(byte type) { this(type, (byte) 0); }
+    /** @see #VEXnetPacket(byte, byte, boolean, byte...) **/
     VEXnetPacket(byte type, byte size, byte... data)
     {this(type, size, true, data);}
 
+    /**
+     *
+     *
+     * @param type the byte corresponding to the type of the packet
+     * @param size the maximum size of the packet
+     * @param includeChecksum whether a checksum is expected when sending or receiving the packet.
+     * @param data the bytes held by the packet, up to at most {@code size}.
+     */
     VEXnetPacket(byte type, byte size, boolean includeChecksum, byte... data) {
         this.type = type;
         this.size = size;
@@ -88,6 +125,8 @@ public class VEXnetPacket {
         return str.toString();
     }
 
+    /** constructs a packet imitating a VEXNet controller that is recognized by the controller as coming from a VEX
+     * Partner Controller **/
     public static VEXnetPacket compileControllerPacket(byte joystick_1,
                                                        byte joystick_2,
                                                        byte joystick_3,
