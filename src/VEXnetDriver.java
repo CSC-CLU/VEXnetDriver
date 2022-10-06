@@ -1,7 +1,6 @@
 /**
- * @file VEXnetDriver.java
  * @author Eric Heinke (sudo-Eric), Zrp200
- * @version 0.5a
+ * @version 1.0
  * @date October 5, 2022
  * @brief Code for communicating using the VEXnet
  */
@@ -114,13 +113,15 @@ public class VEXnetDriver {
 
         char Checksum = 0;
 
-
-        if (readByte() != (byte)0xaa) // Sync 1
+//        System.out.printf("0x%02X%n", peekByte());
+        if (readByte() != (byte)0xAA) // Sync 1
             return null; // Expect Sync 1
 
+//        System.out.printf("0x%02X%n", peekByte());
         if (readByte() != 0x55) // Sync 2
             return null; // Expect Sync 2
 
+//        System.out.printf("0x%02X%n", peekByte());
         byte chr = readByte(); // Packet type
         VEXnetPacket.PacketType type = VEXnetPacket.PacketType.get(chr);
         VEXnetPacket packet =
@@ -128,13 +129,16 @@ public class VEXnetDriver {
                         new VEXnetPacket(chr, (byte) 0);
 
         // Packet size
-        if (peekByte() == 0 && packet.size == 0) {
+//        System.out.printf("0x%02X%n", peekByte());
+        if ((peekByte() == (byte)0xAA || peekByte() == (byte)0x01) && packet.size == 0) {
             // If no more data available and the packet is still empty just return
             return packet;
         } else {
             if (packet.size == 0) { // If packet size is zero
+//                System.out.printf("0x%02X%n", peekByte());
                 chr = readByte();
-                packet.data = new byte[packet.size = --chr];
+                packet.size = packet.includeChecksum ? (byte)(chr - 1) : chr;
+                packet.data = new byte[packet.size];
             }
             // If packet size does not match expected size
             if ((chr != packet.size + 1 && packet.includeChecksum) || chr != packet.size) {
@@ -175,6 +179,7 @@ public class VEXnetDriver {
         int code = serial.writeBytes(bytes, bytes.length);
         if(code != -1) {
             if(showSuccess) System.out.println("Bytes written successfully");
+            return true;
         }
         System.out.println("Error: error while writing data");
         return false;
@@ -184,15 +189,13 @@ public class VEXnetDriver {
         if (bufferPosition != bufferSize) {
             return buffer[bufferPosition++];
         }
-        byte[] buffer = new byte[this.buffer.length];
         int code = serial.readBytes(buffer, buffer.length);
 
         if (code != -1) {
+            bufferSize = code;
+            bufferPosition = 0;
             if (showSuccess)
                 System.out.println("Bytes read successfully");
-            System.arraycopy(buffer, 0, this.buffer,
-                    bufferPosition = 0, bufferSize = code
-            );
             return readByte();
         }
         System.out.println("Error: error while reading the byte");
