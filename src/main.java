@@ -12,41 +12,87 @@ import com.fazecast.jSerialComm.SerialPort;
 public class main {
     public static void main(String[] args) throws InterruptedException {
 
-        SerialPort[] ports = SerialPort.getCommPorts();
+        SerialPort[] comPorts = SerialPort.getCommPorts();
+        SerialPort comPort = null;
 
-        if (ports.length == 0) {
-            System.out.println("There are no com ports available.");
-            return;
+        if (args.length == 0) {
+            if (comPorts.length == 0) {
+                System.out.println("There are no com ports available.");
+                return;
+            }
+            comPort = comPorts[0];
+            System.out.println("Using: " + comPort.getDescriptivePortName());
+        } else {
+            if (args[0].equals("--list")) {
+                if (comPorts.length == 0) {
+                    System.out.println("There are no com ports available.");
+                } else {
+                    System.out.println("Available com ports:");
+                    for (SerialPort port : comPorts) {
+                        System.out.println(port.getSystemPortName() + " | " + port.getDescriptivePortName());
+                    }
+                }
+                return;
+            } else if (args[0].equals("-p") || args[0].equals("--port")) {
+                if (args.length < 2) {
+                    System.out.println("Error: A port must be specified");
+                    return;
+                }
+                for (SerialPort port : comPorts) {
+                    if (port.getSystemPortName().equals(args[1])) {
+                        comPort = port;
+                        break;
+                    }
+                }
+                if (comPort == null) {
+                    System.out.println("Error: No com port named \"" + args[1] + "\"");
+                    return;
+                } else {
+                    System.out.println("Using: " + comPort.getDescriptivePortName());
+                }
+            } else {
+                System.out.println("Error: Unknown argument \"" + args[0] + "\"");
+                return;
+            }
         }
 
-        System.out.println("Available com ports:");
-        for (SerialPort port: ports) {
-            System.out.println(port.getSystemPortName());
-//            System.out.println(port.getDescriptivePortName());
-        }
-
-        VEXnetPacket packet = VEXnetPacket.compileControllerPacket(
+        VEXnetPacket packet1 = VEXnetPacket.compileControllerPacket(
                 (byte)127, (byte)127, (byte)127, (byte)127,
                 false, false,
                 true, false,
                 false, false, false, false,
                 false, false, false, false,
                 (byte)127, (byte)127, (byte)127);
+        VEXnetPacket packet2 = VEXnetPacket.compileControllerPacket(
+                (byte)127, (byte)127, (byte)127, (byte)127,
+                false, false,
+                false, true,
+                false, false, false, false,
+                false, false, false, false,
+                (byte)127, (byte)127, (byte)127);
 //        System.out.println(packet);
-
-        SerialPort comPort = ports[0];
-
-//        System.out.println("Using: " + comPort.getSystemPortName());
-        System.out.println("Using: " + comPort.getDescriptivePortName());
 
         VEXnetDriver driver = new VEXnetDriver(comPort, VEXnetDriver.DeviceType.VEXnet_Joystick_Partner_Port);
 
-        for(int i = 0; i < 100; i++) {
-//            driver.SendVexProtocolPacket(packet);
-            VEXnetPacket packet2 = driver.ReceiveVexProtocolPacket();
-            if (packet2 != null)
-                System.out.println(packet2);
-            Thread.sleep(100);
-        }
+//        while (true) {
+//            Thread.sleep(100);
+//            for (int i = 0; i < 200; i++) {
+//                driver.SendVexProtocolPacket(packet1);
+//                Thread.sleep(1);
+//            }
+//            VEXnetPacket packe3 = driver.ReceiveVexProtocolPacket();
+//            if (packe3 != null)
+//                System.out.println(packe3);
+//
+//            Thread.sleep(100);
+//            for (int i = 0; i < 80; i++) {
+//                driver.SendVexProtocolPacket(packet2);
+//                Thread.sleep(1);
+//            }
+//            packe3 = driver.ReceiveVexProtocolPacket();
+//            if (packe3 != null)
+//                System.out.println(packe3);
+//
+//        }
     }
 }
