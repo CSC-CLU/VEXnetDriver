@@ -7,6 +7,8 @@
 // https://github.com/Fazecast/jSerialComm
 import com.fazecast.jSerialComm.SerialPort;
 
+import java.util.Arrays;
+
 /**
  * Class for testing VEXnet driver
  */
@@ -18,8 +20,9 @@ public class main {
      */
     public static void main(String[] args) throws InterruptedException {
 
-        SerialPort[] comPorts = SerialPort.getCommPorts();
-        SerialPort comPort = null;
+        String[] comPorts = VEXnetDriver.availableComPorts();
+        String[] comPortsDescriptive = VEXnetDriver.availableComPortsDescriptive();
+        String comPort = null;
 
         if (args.length == 0) {
             if (comPorts.length == 0) {
@@ -27,15 +30,15 @@ public class main {
                 return;
             }
             comPort = comPorts[0];
-            System.out.println("Using: " + comPort.getDescriptivePortName());
+            System.out.println("Using: " + comPort);
         } else {
             if (args[0].equals("--list")) {
                 if (comPorts.length == 0) {
                     System.out.println("There are no com ports available.");
                 } else {
                     System.out.println("Available com ports:");
-                    for (SerialPort port : comPorts) {
-                        System.out.println(port.getSystemPortName() + " | " + port.getDescriptivePortName());
+                    for (int i = 0; i < comPorts.length; i++) {
+                        System.out.println(comPorts[i] + " | " + comPortsDescriptive[i]);
                     }
                 }
                 return;
@@ -44,8 +47,8 @@ public class main {
                     System.out.println("Error: A port must be specified");
                     return;
                 }
-                for (SerialPort port : comPorts) {
-                    if (port.getSystemPortName().equals(args[1])) {
+                for (String port : comPorts) {
+                    if (port.equals(args[1])) {
                         comPort = port;
                         break;
                     }
@@ -54,7 +57,7 @@ public class main {
                     System.out.println("Error: No com port named \"" + args[1] + "\"");
                     return;
                 } else {
-                    System.out.println("Using: " + comPort.getDescriptivePortName());
+                    System.out.println("Using: " + comPort);
                 }
             } else {
                 System.out.println("Error: Unknown argument \"" + args[0] + "\"");

@@ -1,6 +1,8 @@
 // https://github.com/Fazecast/jSerialComm
 import com.fazecast.jSerialComm.SerialPort;
 
+import java.security.InvalidParameterException;
+
 import static com.fazecast.jSerialComm.SerialPort.NO_PARITY;
 import static com.fazecast.jSerialComm.SerialPort.ONE_STOP_BIT;
 import static java.util.Objects.requireNonNull;
@@ -12,8 +14,8 @@ import static java.util.Objects.requireNonNull;
  */
 public class VEXnetDriver {
     /** Known device types
-     * @see VEXnetDriver#VEXnetDriver(SerialPort, DeviceType, boolean)
-     * @see VEXnetDriver#VEXnetDriver(SerialPort, int, int, int, int, boolean)
+     * @see VEXnetDriver#VEXnetDriver(String, DeviceType, boolean)
+     * @see VEXnetDriver#VEXnetDriver(String, int, int, int, int, boolean)
      */
     public enum DeviceType {
         LCD(19200),
@@ -60,7 +62,7 @@ public class VEXnetDriver {
      * @param device Serial port device
      * @param deviceType They type of the device
      */
-    public VEXnetDriver(SerialPort device, DeviceType deviceType) {
+    public VEXnetDriver(String device, DeviceType deviceType) {
         this(device, deviceType, false);
     }
 
@@ -70,8 +72,10 @@ public class VEXnetDriver {
      * @param deviceType They type of the device
      * @param showSuccess Show successful serial communication messages
      */
-    public VEXnetDriver(SerialPort device, DeviceType deviceType, boolean showSuccess) {
-        serial = device;
+    public VEXnetDriver(String device, DeviceType deviceType, boolean showSuccess) {
+        serial = findSerialPort(device);
+        if (serial == null)
+            throw new InvalidParameterException("Com port \"" + device + "\" does not exist");
         this.showSuccess = showSuccess;
         serial_port = serial.getSystemPortName();
         requireNonNull(deviceType);
@@ -86,7 +90,7 @@ public class VEXnetDriver {
      * @param parity Parity type
      * @param stopBits Stop bits
      */
-    VEXnetDriver(SerialPort device, int bauds, int dataBits, int parity, int stopBits) {
+    VEXnetDriver(String device, int bauds, int dataBits, int parity, int stopBits) {
         this(device, bauds, dataBits, parity, stopBits, false);
     }
 
@@ -99,8 +103,10 @@ public class VEXnetDriver {
      * @param stopBits Stop bits
      * @param showSuccess Show successful serial communication messages
      */
-    VEXnetDriver(SerialPort device, int bauds, int dataBits, int parity, int stopBits, boolean showSuccess) {
-        this.serial = device;
+    VEXnetDriver(String device, int bauds, int dataBits, int parity, int stopBits, boolean showSuccess) {
+        serial = findSerialPort(device);
+        if (serial == null)
+            throw new InvalidParameterException("Com port \"" + device + "\" does not exist");
         this.showSuccess = showSuccess;
 
         openDevice(this.serial, bauds, dataBits, parity, stopBits);
@@ -127,7 +133,7 @@ public class VEXnetDriver {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Send a NEXnet packet to the serial device
+     * Send a VEXnet packet to the serial device
      * @param packet VEXnet packet
      */
     public void SendVexProtocolPacket(VEXnetPacket packet) {
@@ -321,5 +327,45 @@ public class VEXnetDriver {
             return bufferSize - bufferPosition + serial.bytesAvailable();
         else
             return serial.bytesAvailable();
+    }
+
+    /**
+     * Get a list of com ports available on the computer
+     * @return Com pot list
+     */
+    public static String[] availableComPorts() {
+        SerialPort[] comPorts = SerialPort.getCommPorts();
+        String[] ports = new String[comPorts.length];
+        for (int i = 0; i < comPorts.length; i++) {
+            ports[i] = comPorts[i].getSystemPortName();
+        }
+        return ports;
+    }
+
+    /**
+     * Get a descriptive list of com ports available on the computer
+     * @return Descriptive com port list
+     */
+    public static String[] availableComPortsDescriptive() {
+        SerialPort[] comPorts = SerialPort.getCommPorts();
+        String[] ports = new String[comPorts.length];
+        for (int i = 0; i < comPorts.length; i++) {
+            ports[i] = comPorts[i].getDescriptivePortName();
+        }
+        return ports;
+    }
+
+    /**
+     * Find the com port with the same name as the one provided
+     * @param comPort Name of com port
+     * @return SerialPort if port was found, otherwise null
+     */
+    private SerialPort findSerialPort(String comPort) {
+        for (SerialPort port : SerialPort.getCommPorts()) {
+            if (port.getSystemPortName().equals(comPort) || port.getDescriptivePortName().equals(comPort)) {
+                return port;
+            }
+        }
+        return null;
     }
 }
