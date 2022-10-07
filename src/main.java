@@ -2,13 +2,20 @@
  * Code for communicating using the VEXnet
  * @author Eric Heinke (sudo-Eric), Zrp200
  * @version 1.0
- * @date October 6, 2022
  */
 
 // https://github.com/Fazecast/jSerialComm
 import com.fazecast.jSerialComm.SerialPort;
 
+/**
+ * Class for testing VEXnet driver
+ */
 public class main {
+    /**
+     * Main function for testing VEXnet driver
+     * @param args No arguments are expected
+     * @throws InterruptedException Thread.sleep
+     */
     public static void main(String[] args) throws InterruptedException {
 
         SerialPort[] comPorts = SerialPort.getCommPorts();

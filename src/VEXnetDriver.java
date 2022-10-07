@@ -9,7 +9,6 @@ import static java.util.Objects.requireNonNull;
  * Code for communicating using the VEXnet
  * @author Eric Heinke (sudo-Eric), Zrp200
  * @version 1.0
- * @date October 6, 2022
  */
 public class VEXnetDriver {
     /** Known device types

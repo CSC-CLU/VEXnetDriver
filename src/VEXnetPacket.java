@@ -2,7 +2,6 @@
  * Code for communicating using the VEXnet
  * @author Eric Heinke (sudo-Eric), Zrp200
  * @version 1.0
- * @date October 6, 2022
  */
 public class VEXnetPacket {
 
@@ -46,7 +45,11 @@ public class VEXnetPacket {
 
         PacketType(int type, int size) { this(type, size, true); }
 
-        /** get packet type based on its {@link #type} **/
+        /**
+         * get packet type based on its {@link #type}
+         * @param type Packet type
+         * @return Packet type
+         */
         public static PacketType get(byte type) {
             return get(type, (byte)0);
         }
@@ -76,20 +79,32 @@ public class VEXnetPacket {
     byte[] data;
     boolean includeChecksum = true;
 
-    /** Calls {@link #VEXnetPacket(byte type, byte size, boolean checksum, byte... data)} with information derived from {@code type} **/
+    /**
+     * @see #VEXnetPacket(byte type, byte size, byte... data)
+     * @param type Packet type
+     */
+    VEXnetPacket(byte type) { this(type, (byte) 0); }
+
+    /**
+     * Calls {@link #VEXnetPacket(byte type, byte size, boolean checksum, byte... data)} with information derived from {@code type}
+     * @param type Packet type
+     * @param data Packet data
+     */
     public VEXnetPacket(PacketType type, byte... data) {
         this(type.type, type.size, type.checksum, data);
     }
 
-    /** @see #VEXnetPacket(byte type, byte size, byte... data) **/
-    VEXnetPacket(byte type) { this(type, (byte) 0); }
-    /** @see #VEXnetPacket(byte, byte, boolean, byte...) **/
+    /**
+     * @see #VEXnetPacket(byte, byte, boolean, byte...)
+     * @param type Packet type
+     * @param size Packet size
+     * @param data Packet data
+     */
     VEXnetPacket(byte type, byte size, byte... data)
     {this(type, size, true, data);}
 
     /**
-     *
-     *
+     * Create a VEXnetPacket with specific type, size, data, and includeChecksum
      * @param type the byte corresponding to the type of the packet
      * @param size the maximum size of the packet
      * @param includeChecksum whether a checksum is expected when sending or receiving the packet.
@@ -102,11 +117,19 @@ public class VEXnetPacket {
         this.includeChecksum = includeChecksum;
     }
 
+    /**
+     * Create a copy of a packet
+     * @param packet Packet to copy
+     */
     VEXnetPacket(VEXnetPacket packet) {
         this(packet.type, packet.size, packet.includeChecksum);
         System.arraycopy(this.data, 0, packet.data, 0, this.size);
     }
 
+    /**
+     * Create a string representation of the packet
+     * @return String representation
+     */
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder("Packet: ");
@@ -118,14 +141,36 @@ public class VEXnetPacket {
            .append("Size: ")
            .append(size)
            .append("\n");
-        str.append("Data: ");
-        if (data.length > 0) for(byte b : data) str.append(String.format("%02X ", b));
-        else str.append("None");
+        if (data.length > 0) {
+            str.append("Data: ");
+            for(byte b : data) str.append(String.format("%02X ", b));
+        }
         return str.toString();
     }
 
-    /** constructs a packet imitating a VEXNet controller that is recognized by the controller as coming from a VEX
-     * Partner Controller **/
+    /**
+     * Constructs a packet imitating a VEXNet partner controller to be sent to the main controller
+     * @param joystick_1 Value for joystick 1 (0-255)
+     * @param joystick_2 Value for joystick 2 (0-255)
+     * @param joystick_3 Value for joystick 3 (0-255)
+     * @param joystick_4 Value for joystick 4 (0-255)
+     * @param _5D Is 5D pressed
+     * @param _5U Is 5U pressed
+     * @param _6D Is 6D pressed
+     * @param _6U Is 6U pressed
+     * @param _7D Is 7D pressed
+     * @param _7L Is 7L pressed
+     * @param _7U Is 7U pressed
+     * @param _7R Is 7R pressed
+     * @param _8D Is 8D pressed
+     * @param _8L Is 8L pressed
+     * @param _8U Is 8U pressed
+     * @param _8R Is 8R pressed
+     * @param accel_Y Value for accelerometer Y (0-255)
+     * @param accel_X Value for accelerometer X (0-255)
+     * @param accel_Z Value for accelerometer Z (0-255)
+     * @return Partner controller packet
+     */
     public static VEXnetPacket compileControllerPacket(byte joystick_1,
                                                        byte joystick_2,
                                                        byte joystick_3,
