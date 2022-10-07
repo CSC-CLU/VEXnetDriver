@@ -6,7 +6,8 @@ The purpose of this project is to create a driver (primarily for computers) to a
 
 ## How to use
 The driver is in early development and is currently incomplete.
-Initial testing with sending single controller packets have succeeded.
+Initial testing with sending and receiving packets have succeeded.
+It should be possible to fully emulate the VEX partner controller at this stage.
 
 ## External Documentation
 ### VEX Packet Protocol
