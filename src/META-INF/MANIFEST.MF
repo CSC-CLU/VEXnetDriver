@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Main-Class: test
+Name: VEXnetDriver
+Specification-Title: VEXnet Driver
+Specification-Version: 1.0
+Specification-Vendor: Computer Science Club @ California Lutheran University
+Implementation-Title: VEXnetDriver
+Implementation-Version: 1.0
+Implementation-Vendor: Computer Science Club @ California Lutheran University

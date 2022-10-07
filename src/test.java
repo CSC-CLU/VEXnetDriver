@@ -5,14 +5,11 @@
  */
 
 // https://github.com/Fazecast/jSerialComm
-import com.fazecast.jSerialComm.SerialPort;
-
-import java.util.Arrays;
 
 /**
  * Class for testing VEXnet driver
  */
-public class main {
+public class test {
     /**
      * Main function for testing VEXnet driver
      * @param args No arguments are expected
