@@ -4,16 +4,19 @@
  * @version 1.0
  */
 
-// https://github.com/Fazecast/jSerialComm
+import java.util.concurrent.TimeUnit;
 
 /**
  * Class for testing VEXnet driver
  */
 public class test {
+    private static VEXnetDriver driver = null;
+    private static final int packetDelay = 20;
+
     /**
      * Main function for testing VEXnet driver
      * @param args No arguments are expected
-     * @throws InterruptedException Thread.sleep
+     * @throws InterruptedException TimeUnit.MILLISECONDS.sleep()
      */
     public static void main(String[] args) throws InterruptedException {
 
@@ -62,43 +65,89 @@ public class test {
             }
         }
 
-        VEXnetPacket packet1 = VEXnetPacket.compileControllerPacket(
+        driver = new VEXnetDriver(comPort, VEXnetDriver.DeviceType.VEXnet_Joystick_Partner_Port);
+
+        VEXnetPacket packet_send = VEXnetPacket.compileControllerPacket(
                 (byte)(127), (byte)(127), (byte)(127), (byte)(127),
                 false, false,
                 false, false,
                 false, false, false, false,
                 false, false, false, false,
                 (byte)127, (byte)127, (byte)127);
-        VEXnetPacket packet2 = VEXnetPacket.compileControllerPacket(
-                (byte)127, (byte)127, (byte)127, (byte)127,
-                false, false,
-                false, false,
+
+        VEXnetPacket packet_receive = null;
+
+        TimeUnit.MILLISECONDS.sleep(100);
+        packet_receive = driver.ReceiveVexProtocolPacket();
+        if (packet_receive != null)
+            System.out.println(packet_receive);
+
+        // Move forward
+        robotDrive(255, 1000);
+        delay(1000);
+
+        // Pick up item
+        robotClaw(1, 500);
+        delay(1000);
+        robotDrive(200, 250);
+        delay(1000);
+        robotClaw(-1, 250);
+        delay(1000);
+        robotArm(1, 1200);
+
+        // Turn around
+        robotTurn(255, 1800);
+        delay(1000);
+
+        // Drive back
+        robotDrive(255, 1000);
+        delay(1000);
+
+        // Set item down
+        robotArm(-1, 200);
+        delay(1000);
+        robotClaw(1, 200);
+        delay(1000);
+        robotDrive(0, 50);
+        delay(1000);
+        robotClaw(-1, 300);
+    }
+
+    private static void robotControl(int leftSpeed, int rightSpeed, int armSpeed, int clawSpeed, int time) throws InterruptedException {
+        VEXnetPacket packet = driver.ReceiveVexProtocolPacket();
+        if (packet != null)
+            System.out.println(packet);
+        packet = VEXnetPacket.compileControllerPacket(
+                (byte)(127), (byte)(255-rightSpeed), (byte)(255-leftSpeed), (byte)(127),
+                clawSpeed > 0, clawSpeed < 0,
+                armSpeed < 0, armSpeed > 0,
                 false, false, false, false,
                 false, false, false, false,
                 (byte)127, (byte)127, (byte)127);
-//        System.out.println(packet);
-
-        VEXnetDriver driver = new VEXnetDriver(comPort, VEXnetDriver.DeviceType.VEXnet_Joystick_Partner_Port);
-
-        while (true) {
-            Thread.sleep(100);
-            for (int i = 0; i < 200; i++) {
-                driver.SendVexProtocolPacket(packet1);
-                Thread.sleep(1);
-            }
-            VEXnetPacket packe3 = driver.ReceiveVexProtocolPacket();
-            if (packe3 != null)
-                System.out.println(packe3);
-
-            Thread.sleep(100);
-            for (int i = 0; i < 80; i++) {
-                driver.SendVexProtocolPacket(packet2);
-                Thread.sleep(1);
-            }
-            packe3 = driver.ReceiveVexProtocolPacket();
-            if (packe3 != null)
-                System.out.println(packe3);
-
+        int reps = time / packetDelay;
+        for (int i = 0; i < reps; i++) {
+            driver.SendVexProtocolPacket(packet);
+            TimeUnit.MILLISECONDS.sleep(packetDelay);
         }
+    }
+
+    private static void delay(int time) throws InterruptedException {
+        TimeUnit.MILLISECONDS.sleep(time);
+    }
+
+    private static void robotDrive(int speed, int time) throws InterruptedException {
+        robotControl(speed, speed, 0, 0, time);
+    }
+
+    private static void robotTurn(int speed, int time) throws InterruptedException {
+        robotControl(speed, -speed, 0, 0, time);
+    }
+
+    private static void robotArm(int speed, int time) throws InterruptedException {
+        robotControl(127, 127, speed, 0, time);
+    }
+
+    private static void robotClaw(int speed, int time) throws InterruptedException {
+        robotControl(127, 127, 0, speed, time);
     }
 }
