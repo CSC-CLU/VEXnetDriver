@@ -152,45 +152,60 @@ public class VEXnetPacket {
 
     /**
      * Constructs a packet imitating a VEXNet partner controller to be sent to the main controller
-     * @param joystick_1 Value for joystick 1 (0-255)
-     * @param joystick_2 Value for joystick 2 (0-255)
-     * @param joystick_3 Value for joystick 3 (0-255)
-     * @param joystick_4 Value for joystick 4 (0-255)
-     * @param _5D Is 5D pressed
-     * @param _5U Is 5U pressed
-     * @param _6D Is 6D pressed
-     * @param _6U Is 6U pressed
-     * @param _7D Is 7D pressed
-     * @param _7L Is 7L pressed
-     * @param _7U Is 7U pressed
-     * @param _7R Is 7R pressed
-     * @param _8D Is 8D pressed
-     * @param _8L Is 8L pressed
-     * @param _8U Is 8U pressed
-     * @param _8R Is 8R pressed
-     * @param accel_Y Value for accelerometer Y (0-255)
-     * @param accel_X Value for accelerometer X (0-255)
-     * @param accel_Z Value for accelerometer Z (0-255)
+     * @param Ch1 Value for joystick 1 (0-255)
+     * @param Ch2 Value for joystick 2 (0-255)
+     * @param Ch3 Value for joystick 3 (0-255)
+     * @param Ch4 Value for joystick 4 (0-255)
+     * @param Btn5D Is 5D pressed
+     * @param Btn5U Is 5U pressed
+     * @param Btn6D Is 6D pressed
+     * @param Btn6U Is 6U pressed
+     * @param Btn7D Is 7D pressed
+     * @param Btn7L Is 7L pressed
+     * @param Btn7U Is 7U pressed
+     * @param Btn7R Is 7R pressed
+     * @param Btn8D Is 8D pressed
+     * @param Btn8L Is 8L pressed
+     * @param Btn8U Is 8U pressed
+     * @param Btn8R Is 8R pressed
+     * @param AccelY Value for accelerometer Y (0-255)
+     * @param AccelX Value for accelerometer X (0-255)
+     * @param AccelZ Value for accelerometer Z (0-255)
      * @return Partner controller packet
      */
-    public static VEXnetPacket compileControllerPacket(byte joystick_1,
-                                                       byte joystick_2,
-                                                       byte joystick_3,
-                                                       byte joystick_4,
-                                                       boolean _5D, boolean _5U,
-                                                       boolean _6D, boolean _6U,
-                                                       boolean _7D, boolean _7L, boolean _7U, boolean _7R,
-                                                       boolean _8D, boolean _8L, boolean _8U, boolean _8R,
-                                                       byte accel_Y,
-                                                       byte accel_X,
-                                                       byte accel_Z) {
-        byte[] data = {
-            joystick_1, joystick_2, joystick_3, joystick_4,
-            (byte) ((_5D ? (char) 0x01 : 0) | (_5U ? (char) 0x02 : 0) | (_6D ? (char) 0x04 : 0) | (_6U ? (char) 0x08 : 0)),
-            (byte) ((_7D ? (char) 0x01 : 0) | (_7L ? (char) 0x02 : 0) | (_7U ? (char) 0x04 : 0) | (_7R ? (char) 0x08 : 0) |
-                    (_8D ? (char) 0x10 : 0) | (_8L ? (char) 0x20 : 0) | (_8U ? (char) 0x40 : 0) | (_8R ? (char) 0x80 : 0)),
-            accel_Y, accel_X, accel_Z
-        };
-        return new VEXnetPacket(PacketType.JOY_STATUS_REQUEST_RESPONSE, data);
+    public static VEXnetPacket compileControllerPacket(byte Ch1,
+                                                       byte Ch2,
+                                                       byte Ch3,
+                                                       byte Ch4,
+                                                       boolean Btn5D, boolean Btn5U, boolean Btn6D, boolean Btn6U,
+                                                       boolean Btn7D, boolean Btn7L, boolean Btn7U, boolean Btn7R,
+                                                       boolean Btn8D, boolean Btn8L, boolean Btn8U, boolean Btn8R,
+                                                       byte AccelY,
+                                                       byte AccelX,
+                                                       byte AccelZ) {
+        return compileControllerPacket(
+                Ch1, Ch2, Ch3, Ch4,
+                // Ch5
+                (byte)((Btn5D ? (char) 0x01 : 0) | (Btn5U ? (char) 0x02 : 0) | (Btn6D ? (char) 0x04 : 0) | (Btn6U ? (char) 0x08 : 0)),
+                // Ch6
+                (byte)((Btn7D ? (char) 0x01 : 0) | (Btn7L ? (char) 0x02 : 0) | (Btn7U ? (char) 0x04 : 0) | (Btn7R ? (char) 0x08 : 0) |
+                        (Btn8D ? (char) 0x10 : 0) | (Btn8L ? (char) 0x20 : 0) | (Btn8U ? (char) 0x40 : 0) | (Btn8R ? (char) 0x80 : 0)),
+                AccelY, AccelX, AccelZ
+
+        );
     };
+
+    /** Constructs a packet imitating a VEXNet partner controller to be sent to the main controller.
+     * Button inputs are combined into {@code Ch5} and {@code Ch6}, allowing an extra 4 bits to be used.
+     *
+     * @see #compileControllerPacket(byte, byte, byte, byte, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, byte, byte, byte)
+     **/
+    public static VEXnetPacket compileControllerPacket(byte Ch1, byte Ch2, byte Ch3, byte Ch4, byte Ch5, byte Ch6,
+                                                       byte AccelY, byte AccelX, byte AccelZ) {
+        return new VEXnetPacket(PacketType.JOY_VERSION_REQUEST_RESPONSE,
+                Ch1, Ch2, Ch3, Ch4, Ch5, Ch6,
+                AccelY, AccelX, AccelZ);
+    }
+
+
 }
