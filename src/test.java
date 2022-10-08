@@ -4,6 +4,9 @@
  * @version 1.0
  */
 
+import VEXnetDriver.VEXnetDriver;
+import VEXnetDriver.VEXnetPacket;
+
 import java.util.concurrent.TimeUnit;
 
 /**

@@ -1,3 +1,5 @@
+package VEXnetDriver;
+
 /**
  * Code for communicating using the VEXnet
  * @author Eric Heinke (sudo-Eric), Zrp200
@@ -104,7 +106,7 @@ public class VEXnetPacket {
     {this(type, size, true, data);}
 
     /**
-     * Create a VEXnetPacket with specific type, size, data, and includeChecksum
+     * Create a VEXnetDriver.VEXnetPacket with specific type, size, data, and includeChecksum
      * @param type the byte corresponding to the type of the packet
      * @param size the maximum size of the packet
      * @param includeChecksum whether a checksum is expected when sending or receiving the packet.
