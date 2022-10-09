@@ -151,6 +151,17 @@ public class VEXnetPacket {
     }
 
     /**
+     * helper method that packs bits into a byte, starting from the least significant bit.
+     */
+    private static byte asByte(Boolean... bits) {
+        if(bits.length > Byte.SIZE) throw new IllegalArgumentException("This method supports up to 8 bits, but got " + bits.length + "bits");
+        byte packed = 0;
+        // set the bits starting at least significant bit.
+        for(int i = 0; i < bits.length; i++) if(bits[i]) packed |= 1 << i+1;
+        return packed;
+    }
+
+    /**
      * Constructs a packet imitating a VEXNet partner controller to be sent to the main controller
      * @param Ch1 Value for joystick 1 (0-255)
      * @param Ch2 Value for joystick 2 (0-255)
@@ -186,10 +197,9 @@ public class VEXnetPacket {
         return compileControllerPacket(
                 Ch1, Ch2, Ch3, Ch4,
                 // Ch5
-                (byte)((Btn5D ? (char) 0x01 : 0) | (Btn5U ? (char) 0x02 : 0) | (Btn6D ? (char) 0x04 : 0) | (Btn6U ? (char) 0x08 : 0)),
+                asByte(Btn5D, Btn5U, Btn6D, Btn6U/* [+4 unused] */),
                 // Ch6
-                (byte)((Btn7D ? (char) 0x01 : 0) | (Btn7L ? (char) 0x02 : 0) | (Btn7U ? (char) 0x04 : 0) | (Btn7R ? (char) 0x08 : 0) |
-                        (Btn8D ? (char) 0x10 : 0) | (Btn8L ? (char) 0x20 : 0) | (Btn8U ? (char) 0x40 : 0) | (Btn8R ? (char) 0x80 : 0)),
+                asByte(Btn7D, Btn7L, Btn7U, Btn7R, Btn8D,  Btn8L, Btn8U, Btn8R),
                 AccelY, AccelX, AccelZ
 
         );
