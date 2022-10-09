@@ -202,7 +202,7 @@ public class VEXnetPacket {
      **/
     public static VEXnetPacket compileControllerPacket(byte Ch1, byte Ch2, byte Ch3, byte Ch4, byte Ch5, byte Ch6,
                                                        byte AccelY, byte AccelX, byte AccelZ) {
-        return new VEXnetPacket(PacketType.JOY_VERSION_REQUEST_RESPONSE,
+        return new VEXnetPacket(PacketType.JOY_STATUS_REQUEST_RESPONSE,
                 Ch1, Ch2, Ch3, Ch4, Ch5, Ch6,
                 AccelY, AccelX, AccelZ);
     }
